@@ -1,0 +1,27 @@
+version: "3.7"
+
+services:
+
+  opcua-client:
+    build: ./opcua-client
+    container_name: opcua_client
+
+  web-server:
+    build: ./web-server
+    container_name: web_server
+
+  nats:
+    image: nats
+    ports:
+      - 4222:4222
+    volumes:
+      - type: volume
+        source: nats-logs
+        target: /var/log/nats
+    command:
+      - --log var/log/nats/log.txt
+
+volumes:
+  nats-logs:
+  web-logs:
+  opcua-data:
