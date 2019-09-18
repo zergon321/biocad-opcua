@@ -19,7 +19,7 @@ services:
         source: nats-logs
         target: /var/log/nats
     command:
-      - --log var/log/nats/log.txt
+      - --log /var/log/nats/log.txt
 
 volumes:
   nats-logs:
