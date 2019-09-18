@@ -93,7 +93,7 @@ func (client *OpcuaClient) SubscribeToParameter(parameter string) error {
 func (client *OpcuaClient) Start() {
 	go client.subscription.Run(client.ctx)
 
-	// TODO: receiving parameter updates from the server and sending then to the fan-out.
+	// TODO: receiving parameter updates from the server and sending them to the fan-out.
 }
 
 func (client *OpcuaClient) handleConnectionError(err error) {
