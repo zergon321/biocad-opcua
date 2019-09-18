@@ -24,7 +24,7 @@ type OpcuaClient struct {
 	handleCounter uint32
 }
 
-// Connect establishes connection between server client.
+// Connect establishes the connection between the server and the client.
 func (client *OpcuaClient) Connect() error {
 	opts := []opcua.Option{
 		opcua.SecurityModeString("None"),
