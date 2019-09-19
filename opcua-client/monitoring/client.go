@@ -23,6 +23,8 @@ type OpcuaClient struct {
 	parameters    map[uint32]string
 	handleCounter uint32
 	fanout        *Fanout
+	stop          chan interface{}
+	stopped       bool
 }
 
 // Connect establishes connection between server client.
@@ -58,9 +60,9 @@ func (client *OpcuaClient) CloseConnection() {
 	client.connection.Close()
 }
 
-// SubscribeToParameter makes the client receive updates
+// MonitorParameter makes the client receive updates
 // of the specified parameter from teh server.
-func (client *OpcuaClient) SubscribeToParameter(parameter string) error {
+func (client *OpcuaClient) MonitorParameter(parameter string) error {
 	id, err := ua.ParseNodeID("ns=5;s=" + parameter)
 	client.handleSubscriptionError(err)
 
@@ -90,8 +92,23 @@ func (client *OpcuaClient) SubscribeToParameter(parameter string) error {
 	return nil
 }
 
+// AddSubscriber adds a new subscriber for him to receive measures.
+func (client *OpcuaClient) AddSubscriber(channel chan<- Measure) {
+	client.fanout.AddChannel(channel)
+}
+
+// RemoveSubscriber removes the subscriber for him to stop receiving measures.
+func (client *OpcuaClient) RemoveSubscriber(channel chan<- Measure) {
+	client.fanout.RemoveChannel(channel)
+}
+
 // Start starts the update receiving loop.
 func (client *OpcuaClient) Start() {
+	if !client.stopped {
+		client.logger.Println("Attempt to start already working monitor.")
+		return
+	}
+
 	go client.subscription.Run(client.ctx)
 
 	go func() {
@@ -101,18 +118,14 @@ func (client *OpcuaClient) Start() {
 				client.logger.Println("Disconnected from the server.")
 				return
 
+			case <-client.stop:
+				client.logger.Println("Monitor stopped")
+				return
+
 			case message := <-client.subscription.Notifs:
 				switch mes := message.Value.(type) {
 				case *ua.DataChangeNotification:
-					for _, item := range mes.MonitoredItems {
-						measure := Measure{
-							Timestamp: time.Now(),
-							Parameter: client.parameters[item.ClientHandle],
-							Value:     item.Value.Value.Value().(float64),
-						}
-
-						client.fanout.SendMeasure(measure)
-					}
+					client.sendMessageToFanout(mes)
 
 				default:
 					client.logger.Println("Unknown message type")
@@ -120,6 +133,26 @@ func (client *OpcuaClient) Start() {
 			}
 		}
 	}()
+
+	client.stopped = false
+}
+
+// Stop stops the update receiving loop.
+func (client *OpcuaClient) Stop() {
+	client.stop <- true
+	client.stopped = true
+}
+
+func (client *OpcuaClient) sendMessageToFanout(message *ua.DataChangeNotification) {
+	for _, item := range message.MonitoredItems {
+		measure := Measure{
+			Timestamp: time.Now(),
+			Parameter: client.parameters[item.ClientHandle],
+			Value:     item.Value.Value.Value().(float64),
+		}
+
+		client.fanout.SendMeasure(measure)
+	}
 }
 
 func (client *OpcuaClient) handleConnectionError(err error) {
