@@ -1,5 +1,7 @@
 package parameters
 
+import "time"
+
 const (
 	// Temperature is a physical quantity expressing hot and cold.
 	Temperature = "Temperature"
@@ -9,7 +11,7 @@ const (
 	// of an object per unit area over which that force is distributed.
 	Pressure = "Pressure"
 	// Density of a substance is its mass per unit volume.
-	Density = "Dendity"
+	Density = "Density"
 	// Volume is the quantity of three-dimensional space
 	// enclosed by a closed surface.
 	Volume = "Volume"
@@ -26,3 +28,10 @@ const (
 	// Frequency is the number of occurrences of a repeating event per unit of time.
 	Frequency = "Frequency"
 )
+
+// Measure represents the state of the parameter at a certain moment of time.
+type Measure struct {
+	Timestamp time.Time
+	Parameter string
+	Value     float64
+}

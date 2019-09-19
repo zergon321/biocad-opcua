@@ -18,10 +18,11 @@ type OpcuaClient struct {
 	connection    *opcua.Client
 	subscription  *opcua.Subscription
 	ctx           context.Context
-	logger        log.Logger
+	logger        *log.Logger
 	interval      time.Duration
 	parameters    map[uint32]string
 	handleCounter uint32
+	fanout        *Fanout
 }
 
 // Connect establishes connection between server client.
@@ -93,7 +94,32 @@ func (client *OpcuaClient) SubscribeToParameter(parameter string) error {
 func (client *OpcuaClient) Start() {
 	go client.subscription.Run(client.ctx)
 
-	// TODO: receiving parameter updates from the server and sending then to the fan-out.
+	go func() {
+		for {
+			select {
+			case <-client.ctx.Done():
+				client.logger.Println("Disconnected from the server.")
+				return
+
+			case message := <-client.subscription.Notifs:
+				switch mes := message.Value.(type) {
+				case *ua.DataChangeNotification:
+					for _, item := range mes.MonitoredItems {
+						measure := Measure{
+							Timestamp: time.Now(),
+							Parameter: client.parameters[item.ClientHandle],
+							Value:     item.Value.Value.Value().(float64),
+						}
+
+						client.fanout.SendMeasure(measure)
+					}
+
+				default:
+					client.logger.Println("Unknown message type")
+				}
+			}
+		}
+	}()
 }
 
 func (client *OpcuaClient) handleConnectionError(err error) {
