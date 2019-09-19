@@ -98,8 +98,11 @@ func (monitor *OpcuaMonitor) AddSubscriber(channel chan<- Measure) {
 }
 
 // RemoveSubscriber removes the subscriber for him to stop receiving measures.
-func (monitor *OpcuaMonitor) RemoveSubscriber(channel chan<- Measure) {
-	monitor.fanout.RemoveChannel(channel)
+func (monitor *OpcuaMonitor) RemoveSubscriber(channel chan<- Measure) error {
+	err := monitor.fanout.RemoveChannel(channel)
+	monitor.handleRemoveSubscriptionError(err)
+
+	return err
 }
 
 // Start starts the update receiving loop.
@@ -164,5 +167,11 @@ func (monitor *OpcuaMonitor) handleConnectionError(err error) {
 func (monitor *OpcuaMonitor) handleSubscriptionError(err error) {
 	if err != nil {
 		monitor.logger.Println("Couldn't subscribe to the parameter:", err)
+	}
+}
+
+func (monitor *OpcuaMonitor) handleRemoveSubscriptionError(err error) {
+	if err != nil {
+		monitor.logger.Println("Couldn't remove subscription from the fanout:", err)
 	}
 }
