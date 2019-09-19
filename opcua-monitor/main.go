@@ -52,10 +52,11 @@ func main() {
 	err = monitor.Connect()
 	handleError(logger, "Couldn't connect to the server", err)
 	monitor.Start()
+	monitor.MonitorParameter("Humidity")
+	monitor.MonitorParameter("Temperature")
 
 	// Subscribe to humidity.
 	go func() {
-		monitor.MonitorParameter("Humidity")
 		channel := make(chan monitoring.Measure)
 		monitor.AddSubscriber(channel)
 
@@ -68,7 +69,6 @@ func main() {
 
 	// Subscribe to temperature.
 	go func() {
-		monitor.MonitorParameter("Temperature")
 		channel := make(chan monitoring.Measure)
 		monitor.AddSubscriber(channel)
 

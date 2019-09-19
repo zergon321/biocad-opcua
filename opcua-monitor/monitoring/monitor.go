@@ -4,12 +4,21 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/gopcua/opcua/ua"
 
 	"github.com/gopcua/opcua"
 )
+
+var (
+	synchronizer *sync.Mutex
+)
+
+func init() {
+	synchronizer = new(sync.Mutex)
+}
 
 // OpcuaMonitor is a class for interaction with OPC UA server.
 // You just need to connect to the server and then subscribe to certain parameters.
@@ -69,6 +78,9 @@ func (monitor *OpcuaMonitor) MonitorParameter(parameter string) error {
 	if err != nil {
 		return err
 	}
+
+	synchronizer.Lock()
+	defer synchronizer.Unlock()
 
 	request := opcua.NewMonitoredItemCreateRequestWithDefaults(id,
 		ua.AttributeIDValue, monitor.handleCounter)
