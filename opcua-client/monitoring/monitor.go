@@ -175,3 +175,18 @@ func (monitor *OpcuaMonitor) handleRemoveSubscriptionError(err error) {
 		monitor.logger.Println("Couldn't remove subscription from the fanout:", err)
 	}
 }
+
+// NewOpcuaMonitor creates a new monitor to track data changes on the OPC UA server and translate them to subscribers.
+func NewOpcuaMonitor(ctx context.Context, endpoint string, logger *log.Logger, interval time.Duration) *OpcuaMonitor {
+	return &OpcuaMonitor{
+		endpoint:      endpoint,
+		ctx:           ctx,
+		logger:        logger,
+		interval:      interval,
+		parameters:    make(map[uint32]string),
+		fanout:        NewFanout(),
+		handleCounter: 0,
+		stop:          make(chan interface{}),
+		stopped:       true,
+	}
+}

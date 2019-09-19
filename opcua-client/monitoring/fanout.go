@@ -46,3 +46,10 @@ func (fanout *Fanout) SendMeasure(measure Measure) {
 		}(channel)
 	}
 }
+
+// NewFanout creates a new fanout to serve data to registered channels.
+func NewFanout() *Fanout {
+	return &Fanout{
+		channels: make([]chan<- Measure, 0),
+	}
+}
