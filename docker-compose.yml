@@ -2,11 +2,19 @@ version: "3.7"
 
 services:
 
-  opcua-client:
-    build: ./opcua-client
-    container_name: opcua_client
+  opcua-monitor:
+    depends_on:
+      - influxdb
+    build: ./opcua-monitor
+    volumes:
+      - type: volume
+        source: opcua-logs
+        target: /var/log/opcua
+    container_name: opcua_monitor
 
   web-server:
+    depends_on:
+      - opcua-monitor
     build: ./web-server
     container_name: web_server
 
@@ -21,7 +29,33 @@ services:
     command:
       - --log /var/log/nats/log.txt
 
+  influxdb:
+    image: influxdb:1.7.8-alpine
+    ports:
+      - 8086:8086
+    volumes:
+      - type: volume
+        source: influx-data
+        target: /var/lib/influxdb
+    container_name: influx_server
+  
+  chronograf:
+    depends_on:
+      - influxdb
+    image: chronograf:1.7.14-alpine
+    ports:
+      - 8888:8888
+    volumes:
+      - type: volume
+        source: chronograf-data
+        target: /var/lib/chronograf
+    container_name: chronograf_server
+    command:
+      - --influxdb-url=http://influxdb:8086
+
 volumes:
   nats-logs:
   web-logs:
-  opcua-data:
+  opcua-logs:
+  influxdb-data:
+  chronograf-data:
