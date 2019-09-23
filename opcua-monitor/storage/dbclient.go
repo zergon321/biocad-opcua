@@ -21,6 +21,7 @@ func measureToPoint(measure monitoring.Measure) (*influxdb.Point, error) {
 	return point, err
 }
 
+// DbClient represents a client for the time-series database.
 type DbClient struct {
 	address        string
 	database       string
@@ -30,6 +31,7 @@ type DbClient struct {
 	pointsInSeries int
 }
 
+// Connect establishes the connection with the time-series database.
 func (dbclient *DbClient) Connect() error {
 	client, err := influxdb.NewHTTPClient(influxdb.HTTPConfig{
 		Addr: dbclient.address,
@@ -45,14 +47,17 @@ func (dbclient *DbClient) Connect() error {
 	return nil
 }
 
+// CloseConnection closes the database connection.
 func (dbclient *DbClient) CloseConnection() {
 	dbclient.influxClient.Close()
 }
 
+// GetSubscriptionChannel returns the channel to accept measures and write them to the time-series database.
 func (dbclient *DbClient) GetSubscriptionChannel() chan<- monitoring.Measure {
 	return dbclient.subscription
 }
 
+// Start starts accepting measures and writing them to the time-series database.
 func (dbclient *DbClient) Start() {
 	go func() {
 		var (
@@ -90,6 +95,16 @@ func (dbclient *DbClient) Start() {
 			counter++
 		}
 	}()
+}
+
+// NewDbClient creates a new client for the time-series database.
+func NewDbClient(address, database string, logger *log.Logger, pointsInSeries int) *DbClient {
+	return &DbClient{
+		address:        address,
+		database:       database,
+		logger:         logger,
+		pointsInSeries: pointsInSeries,
+	}
 }
 
 func (dbclient *DbClient) handleDbConnectionError(err error) {
