@@ -3,12 +3,15 @@ package main
 import (
 	"biocad-opcua/opcua-monitor/monitoring"
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"time"
+
+	_ "github.com/influxdata/influxdb1-client"
 )
 
 // Configuration constants for the application.
@@ -55,27 +58,29 @@ func main() {
 	monitor.MonitorParameter("Humidity")
 	monitor.MonitorParameter("Temperature")
 
-	// Subscribe to humidity.
+	// Subscriber "alpha".
 	go func() {
 		channel := make(chan monitoring.Measure)
 		monitor.AddSubscriber(channel)
 
 		for measure := range channel {
-			fmt.Println("Time:", measure.Timestamp,
-				"Parameter:", measure.Parameter,
-				"Value:", measure.Value)
+			bytes, err := json.MarshalIndent(measure, "", "    ")
+			handleError(logger, "Couldn't marshal the object to JSON", err)
+
+			fmt.Println("alpha", string(bytes))
 		}
 	}()
 
-	// Subscribe to temperature.
+	// Subscriber "bravo".
 	go func() {
 		channel := make(chan monitoring.Measure)
 		monitor.AddSubscriber(channel)
 
 		for measure := range channel {
-			fmt.Println("Time:", measure.Timestamp,
-				"Parameter:", measure.Parameter,
-				"Value:", measure.Value)
+			bytes, err := json.MarshalIndent(measure, "", "    ")
+			handleError(logger, "Couldn't marshal the object to JSON", err)
+
+			fmt.Println("bravo", string(bytes))
 		}
 	}()
 

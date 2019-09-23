@@ -140,7 +140,7 @@ func (monitor *OpcuaMonitor) Start() {
 			case message := <-monitor.subscription.Notifs:
 				switch mes := message.Value.(type) {
 				case *ua.DataChangeNotification:
-					monitor.sendMessageToFanout(mes)
+					monitor.sendMeasureToFanout(mes)
 
 				default:
 					monitor.logger.Println("Unknown message type")
@@ -158,14 +158,17 @@ func (monitor *OpcuaMonitor) Stop() {
 	monitor.stopped = true
 }
 
-func (monitor *OpcuaMonitor) sendMessageToFanout(message *ua.DataChangeNotification) {
-	for _, item := range message.MonitoredItems {
-		measure := Measure{
-			Timestamp: time.Now(),
-			Parameter: monitor.parameters[item.ClientHandle],
-			Value:     item.Value.Value.Value().(float64),
-		}
+func (monitor *OpcuaMonitor) sendMeasureToFanout(message *ua.DataChangeNotification) {
+	measure := Measure{
+		Timestamp:  time.Now(),
+		Parameters: make(map[string]float64),
+	}
 
+	for _, item := range message.MonitoredItems {
+		parameter := monitor.parameters[item.ClientHandle]
+		value := item.Value.Value.Value().(float64)
+
+		measure.Parameters[parameter] = value
 		monitor.fanout.SendMeasure(measure)
 	}
 }

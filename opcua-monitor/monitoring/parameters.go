@@ -31,7 +31,6 @@ const (
 
 // Measure represents the state of the parameter at a certain moment of time.
 type Measure struct {
-	Timestamp time.Time
-	Parameter string
-	Value     float64
+	Timestamp  time.Time
+	Parameters map[string]float64
 }
