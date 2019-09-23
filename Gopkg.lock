@@ -7,9 +7,15 @@
   revision = "553a90f27b81370cb5fc5571104dbdbfdf31a9fd"
   version = "v0.1.5"
 
+[[projects]]
+  branch = "master"
+  name = "github.com/influxdata/influxdb1-client"
+  packages = [".","models","pkg/escape","v2"]
+  revision = "fc22c7df067eefd070157f157893fbce961d6359"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9d9f0ed89819b0a7b31428731f87de4ffe0800b4041d006c28cdb0bb65e2d823"
+  inputs-digest = "a2276eeca5390a8cbcba8cc223582c0f49974349dd27be60250ff98dc838bfd6"
   solver-name = "gps-cdcl"
   solver-version = 1
