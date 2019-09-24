@@ -1,6 +1,6 @@
 FROM golang:1.12 AS builder
-COPY . /go/src/web
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/bin/web /go/src/web/
+COPY . /go/src/biocad-opcua
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/bin/web /go/src/biocad-opcua/web-server/
 ENTRYPOINT [ "/go/bin/web" ]
 
 FROM alpine:latest

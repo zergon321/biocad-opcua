@@ -1,6 +1,6 @@
 FROM golang:1.12 AS builder
-COPY . /go/src/opcua-monitor
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/bin/opcua-monitor /go/src/opcua-monitor/
+COPY . /go/src/biocad-opcua
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/bin/opcua-monitor /go/src/biocad-opcua/opcua-monitor/
 ENTRYPOINT [ "/go/bin/opcua-monitor" ]
 
 FROM alpine:latest

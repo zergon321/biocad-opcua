@@ -5,7 +5,10 @@ services:
   opcua-monitor:
     depends_on:
       - influxdb
-    build: ./opcua-monitor
+    build:
+      context: .
+      dockerfile: ./opcua-monitor/Dockerfile
+    image: opcua-monitor
     volumes:
       - type: volume
         source: opcua-logs
@@ -21,7 +24,10 @@ services:
     depends_on:
       - opcua-monitor
       - influxdb
-    build: ./web-server
+    build:
+      context: .
+      dockerfile: ./web-server/Dockerfile
+    image: web-server
     container_name: web_server
 
   nats:
