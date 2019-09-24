@@ -104,6 +104,7 @@ func NewDbClient(address, database string, logger *log.Logger, pointsInSeries in
 		database:       database,
 		logger:         logger,
 		pointsInSeries: pointsInSeries,
+		subscription:   make(chan monitoring.Measure),
 	}
 }
 
