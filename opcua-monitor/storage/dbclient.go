@@ -65,9 +65,11 @@ func (dbclient *DbClient) Start() {
 			series  influxdb.BatchPoints
 			err     error
 		)
+		// For the case if we have a couple of unwritten points.
+		defer dbclient.influxClient.Write(series)
 
 		for measure := range dbclient.subscription {
-			if counter%dbclient.pointsInSeries == 0 {
+			if (counter+1)%dbclient.pointsInSeries == 0 {
 				if series != nil {
 					err = dbclient.influxClient.Write(series)
 					dbclient.handleWriteToDbError(err)
