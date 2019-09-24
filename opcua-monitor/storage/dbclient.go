@@ -65,8 +65,6 @@ func (dbclient *DbClient) Start() {
 			series  influxdb.BatchPoints
 			err     error
 		)
-		// For the case if we have a couple of unwritten points.
-		defer dbclient.influxClient.Write(series)
 
 		// Initialize the first series of points.
 		series, err = influxdb.NewBatchPoints(influxdb.BatchPointsConfig{
@@ -80,6 +78,7 @@ func (dbclient *DbClient) Start() {
 		}
 
 		for measure := range dbclient.subscription {
+			// If series is full - write it to the database and create a new one.
 			if (counter+1)%dbclient.pointsInSeries == 0 {
 				err = dbclient.influxClient.Write(series)
 				dbclient.handleWriteToDbError(err)
@@ -95,6 +94,7 @@ func (dbclient *DbClient) Start() {
 				}
 			}
 
+			// If the series is not full yet, add a new point to the series.
 			point, err := measureToPoint(measure)
 			dbclient.handleCreatePointError(err)
 
