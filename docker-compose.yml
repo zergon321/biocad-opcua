@@ -41,7 +41,7 @@ services:
       - 8086:8086
     volumes:
       - type: volume
-        source: influx-data
+        source: influxdb-data
         target: /var/lib/influxdb
     container_name: influx_server
   
