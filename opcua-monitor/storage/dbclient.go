@@ -68,6 +68,7 @@ func (dbclient *DbClient) Start() {
 		// For the case if we have a couple of unwritten points.
 		defer dbclient.influxClient.Write(series)
 
+		// Initialize the first series of points.
 		series, err = influxdb.NewBatchPoints(influxdb.BatchPointsConfig{
 			Database:  dbclient.database,
 			Precision: "us",
