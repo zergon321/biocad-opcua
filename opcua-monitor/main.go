@@ -74,7 +74,7 @@ func main() {
 	monitor.MonitorParameter("Humidity")
 	monitor.MonitorParameter("Temperature")
 
-	// Subscriber "alpha".
+	// Console subscriber.
 	go func() {
 		channel := make(chan monitoring.Measure)
 		monitor.AddSubscriber(channel)
@@ -87,7 +87,7 @@ func main() {
 		}
 	}()
 
-	// Subscriber "bravo".
+	// Database subscriber.
 	channel := dbclient.GetSubscriptionChannel()
 
 	monitor.AddSubscriber(channel)
