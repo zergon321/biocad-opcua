@@ -38,8 +38,9 @@ services:
       - type: volume
         source: nats-logs
         target: /var/log/nats
+    container_name: nats_server
     command:
-      - --log /var/log/nats/log.txt
+      - --log=/var/log/nats/log.txt
 
   influxdb:
     image: influxdb:1.7.8-alpine
