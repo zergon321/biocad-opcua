@@ -81,10 +81,8 @@ func (dbclient *DbClient) Start() {
 
 		for measure := range dbclient.subscription {
 			if (counter+1)%dbclient.pointsInSeries == 0 {
-				if series != nil {
-					err = dbclient.influxClient.Write(series)
-					dbclient.handleWriteToDbError(err)
-				}
+				err = dbclient.influxClient.Write(series)
+				dbclient.handleWriteToDbError(err)
 
 				series, err = influxdb.NewBatchPoints(influxdb.BatchPointsConfig{
 					Database:  dbclient.database,
