@@ -11,10 +11,16 @@ services:
         source: opcua-logs
         target: /var/log/opcua
     container_name: opcua_monitor
+    command:
+      - --endpoint=opc.tcp://192.168.0.103:53530/OPCUA/SimulationServer
+      - --dbaddress=http://influxdb:8086
+      - --database=system_indicators
+      - --capacity=60
 
   web-server:
     depends_on:
       - opcua-monitor
+      - influxdb
     build: ./web-server
     container_name: web_server
 
