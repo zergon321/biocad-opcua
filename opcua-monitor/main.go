@@ -85,8 +85,8 @@ func main() {
 	defer monitor.Stop()
 
 	// Subscribe to certain parameters.
-	monitor.MonitorParameter("Humidity")
-	monitor.MonitorParameter("Temperature")
+	monitor.MonitorParameter(monitoring.Humidity)
+	monitor.MonitorParameter(monitoring.Temperature)
 
 	// Console subscriber.
 	go func() {
