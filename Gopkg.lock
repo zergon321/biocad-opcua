@@ -13,9 +13,33 @@
   packages = [".","models","pkg/escape","v2"]
   revision = "fc22c7df067eefd070157f157893fbce961d6359"
 
+[[projects]]
+  name = "github.com/nats-io/nats.go"
+  packages = [".","encoders/builtin","util"]
+  revision = "e2837a2879e82886f6e21715e3a0217fdc46d370"
+  version = "v1.8.1"
+
+[[projects]]
+  name = "github.com/nats-io/nkeys"
+  packages = ["."]
+  revision = "0073b400419be3ffb022ef46b675805e92534a34"
+  version = "v0.1.0"
+
+[[projects]]
+  name = "github.com/nats-io/nuid"
+  packages = ["."]
+  revision = "4b96681fa6d28dd0ab5fe79bac63b3a493d9ee94"
+  version = "v1.0.1"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["ed25519","ed25519/internal/edwards25519"]
+  revision = "a832865fa7ada6126f4c6124ac49f71be71bff2a"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a2276eeca5390a8cbcba8cc223582c0f49974349dd27be60250ff98dc838bfd6"
+  inputs-digest = "7318b371719040a1a4327ab253f399d37f6c86ae990e8aff0874fb2d22d0964c"
   solver-name = "gps-cdcl"
   solver-version = 1
