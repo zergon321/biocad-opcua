@@ -8,6 +8,18 @@
   version = "v0.1.5"
 
 [[projects]]
+  name = "github.com/gorilla/mux"
+  packages = ["."]
+  revision = "00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15"
+  version = "v1.7.3"
+
+[[projects]]
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  revision = "c3e18be99d19e6b3e8f1559eea2c161a665c4b6b"
+  version = "v1.4.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/influxdata/influxdb1-client"
   packages = [".","models","pkg/escape","v2"]
@@ -40,6 +52,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7318b371719040a1a4327ab253f399d37f6c86ae990e8aff0874fb2d22d0964c"
+  inputs-digest = "cb1610c5b0ab071b6960bdcf9d0621b3801c04d895345cf2459cffba37cf78b2"
   solver-name = "gps-cdcl"
   solver-version = 1
