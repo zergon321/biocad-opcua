@@ -52,6 +52,11 @@ func (publisher *Publisher) Start() {
 	}()
 }
 
+// Stop stops sending incoming messages to subscribers.
+func (publisher *Publisher) Stop() {
+	publisher.conn.Close()
+}
+
 // NewPublisher creates a new publisher to listen for new messages to send them to other services of the application.
 func NewPublisher(address, topic string, logger *log.Logger) *Publisher {
 	return &Publisher{

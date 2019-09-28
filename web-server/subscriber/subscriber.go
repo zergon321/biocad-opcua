@@ -60,6 +60,22 @@ func (subscriber *Subscriber) Start() {
 	}()
 }
 
+// Stop stops receiving messages from the topic.
+func (subscriber *Subscriber) Stop() {
+	subscriber.subscription.Unsubscribe()
+	subscriber.conn.Close()
+}
+
+// NewSubscriber create a new subscriber to receive messages from publishers.
+func NewSubscriber(address, topic string, logger *log.Logger) *Subscriber {
+	return &Subscriber{
+		address:  address,
+		topic:    topic,
+		logger:   logger,
+		receiver: make(chan monitoring.Measure),
+	}
+}
+
 func (subscriber *Subscriber) handleConnectionError(err error) {
 	if err != nil {
 		subscriber.logger.Println("Couldn't connect to the NATS message broking service:", err)
