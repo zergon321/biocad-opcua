@@ -10,12 +10,12 @@ import (
 
 // Subscriber listens for new measures from the message broking service.
 type Subscriber struct {
-	address      string
-	conn         *nats.Conn
-	subscription *nats.Subscription
-	logger       *log.Logger
-	receiver     chan monitoring.Measure
-	topic        string
+	address  string
+	conn     *nats.Conn
+	logger   *log.Logger
+	receiver chan monitoring.Measure
+	topic    string
+	stop     chan interface{}
 }
 
 // Connect establishes the connection with the message broker.
@@ -48,21 +48,33 @@ func (subscriber *Subscriber) Start() {
 		if err != nil {
 			return
 		}
-		subscriber.subscription = sub
+		defer sub.Unsubscribe()
 
 		// Get messages, deserialize them and send to listeners.
-		for message := range source {
-			var measure monitoring.Measure
-			json.Unmarshal(message.Data, &measure)
+		for {
+			select {
+			case message := <-source:
+				var measure monitoring.Measure
+				err = json.Unmarshal(message.Data, &measure)
 
-			subscriber.receiver <- measure
+				go func() {
+					subscriber.receiver <- measure
+				}()
+
+			case <-subscriber.stop:
+				break
+			}
 		}
 	}()
 }
 
-// Stop stops receiving messages from the topic.
+// Stop stops listening for incoming messages.
 func (subscriber *Subscriber) Stop() {
-	subscriber.subscription.Unsubscribe()
+	subscriber.stop <- true
+}
+
+// CloseConnection closes the connection with the message broker.
+func (subscriber *Subscriber) CloseConnection() {
 	subscriber.conn.Close()
 }
 
@@ -73,6 +85,7 @@ func NewSubscriber(address, topic string, logger *log.Logger) *Subscriber {
 		topic:    topic,
 		logger:   logger,
 		receiver: make(chan monitoring.Measure),
+		stop:     make(chan interface{}),
 	}
 }
 
@@ -85,5 +98,11 @@ func (subscriber *Subscriber) handleConnectionError(err error) {
 func (subscriber *Subscriber) handleSubscriptionError(err error) {
 	if err != nil {
 		subscriber.logger.Println("Couldn't subscribe to the topic:", err)
+	}
+}
+
+func (subscriber *Subscriber) handleJSONUnmarshalError(err error) {
+	if err != nil {
+		subscriber.logger.Println("Couldn't deserialize JSON:", err)
 	}
 }

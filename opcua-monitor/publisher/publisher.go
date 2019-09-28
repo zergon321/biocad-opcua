@@ -15,6 +15,7 @@ type Publisher struct {
 	logger  *log.Logger
 	source  chan monitoring.Measure
 	topic   string
+	stop    chan interface{}
 }
 
 // Connect establishes the connection with the message broker.
@@ -39,18 +40,29 @@ func (publisher *Publisher) GetChannel() chan<- monitoring.Measure {
 // Start starts listening for incoming messages to send them to other services.
 func (publisher *Publisher) Start() {
 	go func() {
-		for measure := range publisher.source {
-			data, err := json.MarshalIndent(measure, "", "    ")
-			publisher.handleJSONMarshalError(err)
+		for {
+			select {
+			case measure := <-publisher.source:
+				data, err := json.MarshalIndent(measure, "", "    ")
+				publisher.handleJSONMarshalError(err)
 
-			if err != nil {
-				continue
+				if err != nil {
+					continue
+				}
+
+				err = publisher.conn.Publish(publisher.topic, data)
+				publisher.handlePublishError(err)
+
+			case <-publisher.stop:
+				break
 			}
-
-			err = publisher.conn.Publish(publisher.topic, data)
-			publisher.handlePublishError(err)
 		}
 	}()
+}
+
+// Stop stops publishing measures.
+func (publisher *Publisher) Stop() {
+	publisher.stop <- true
 }
 
 // CloseConnection closes the connection woth the message broker.
@@ -65,18 +77,19 @@ func NewPublisher(address, topic string, logger *log.Logger) *Publisher {
 		topic:   topic,
 		logger:  logger,
 		source:  make(chan monitoring.Measure),
+		stop:    make(chan interface{}),
 	}
 }
 
 func (publisher *Publisher) handleConnectionError(err error) {
 	if err != nil {
-		publisher.logger.Println("Couldn't connect to the NATS message broking service", err)
+		publisher.logger.Println("Couldn't connect to the NATS message broking service:", err)
 	}
 }
 
 func (publisher *Publisher) handleJSONMarshalError(err error) {
 	if err != nil {
-		publisher.logger.Println("Couldn't serialize the data yo JSON", err)
+		publisher.logger.Println("Couldn't serialize the data yo JSON:", err)
 	}
 }
 

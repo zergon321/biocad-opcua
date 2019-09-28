@@ -29,6 +29,7 @@ type DbClient struct {
 	influxClient   influxdb.Client
 	subscription   chan monitoring.Measure
 	pointsInSeries int
+	stop           chan interface{}
 }
 
 // Connect establishes the connection with the time-series database.
@@ -77,35 +78,46 @@ func (dbclient *DbClient) Start() {
 			return
 		}
 
-		for measure := range dbclient.subscription {
-			// If series is full - write it to the database and create a new one.
-			if (counter+1)%dbclient.pointsInSeries == 0 {
-				err = dbclient.influxClient.Write(series)
-				dbclient.handleWriteToDbError(err)
+		for {
+			select {
+			case measure := <-dbclient.subscription:
+				// If series is full - write it to the database and create a new one.
+				if (counter+1)%dbclient.pointsInSeries == 0 {
+					err = dbclient.influxClient.Write(series)
+					dbclient.handleWriteToDbError(err)
 
-				series, err = influxdb.NewBatchPoints(influxdb.BatchPointsConfig{
-					Database:  dbclient.database,
-					Precision: "us",
-				})
-				dbclient.handleCreateSeriesError(err)
+					series, err = influxdb.NewBatchPoints(influxdb.BatchPointsConfig{
+						Database:  dbclient.database,
+						Precision: "us",
+					})
+					dbclient.handleCreateSeriesError(err)
+
+					if err != nil {
+						return
+					}
+				}
+
+				// If the series is not full yet, add a new point to the series.
+				point, err := measureToPoint(measure)
+				dbclient.handleCreatePointError(err)
 
 				if err != nil {
-					return
+					continue
 				}
+
+				series.AddPoint(point)
+				counter++
+
+			case <-dbclient.stop:
+				break
 			}
-
-			// If the series is not full yet, add a new point to the series.
-			point, err := measureToPoint(measure)
-			dbclient.handleCreatePointError(err)
-
-			if err != nil {
-				continue
-			}
-
-			series.AddPoint(point)
-			counter++
 		}
 	}()
+}
+
+// Stop stops writing measures to the database.
+func (dbclient *DbClient) Stop() {
+	dbclient.stop <- true
 }
 
 // NewDbClient creates a new client for the time-series database.
@@ -116,6 +128,7 @@ func NewDbClient(address, database string, logger *log.Logger, pointsInSeries in
 		logger:         logger,
 		pointsInSeries: pointsInSeries,
 		subscription:   make(chan monitoring.Measure),
+		stop:           make(chan interface{}),
 	}
 }
 

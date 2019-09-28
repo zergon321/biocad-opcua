@@ -95,7 +95,7 @@ func main() {
 	monitor.Start()
 	defer monitor.Stop()
 
-	// Subscribe to certain parameters.
+	// Monitor certain parameters.
 	monitor.MonitorParameter(monitoring.Humidity)
 	monitor.MonitorParameter(monitoring.Temperature)
 
@@ -117,12 +117,14 @@ func main() {
 
 	monitor.AddSubscriber(channel)
 	dbclient.Start()
+	defer dbclient.Stop()
 
 	// Publisher.
 	channel = pb.GetChannel()
 
 	monitor.AddSubscriber(channel)
 	pb.Start()
+	defer pb.Stop()
 
 	time.Sleep(20 * time.Second)
 }
