@@ -2,6 +2,7 @@ package main
 
 import (
 	"biocad-opcua/opcua-monitor/monitoring"
+	"biocad-opcua/opcua-monitor/publisher"
 	"biocad-opcua/opcua-monitor/storage"
 	"context"
 	"encoding/json"
@@ -23,18 +24,22 @@ const (
 )
 
 var (
-	endpoint  string
-	dbaddress string
-	database  string
-	capacity  int
+	endpoint      string
+	dbAddress     string
+	database      string
+	brokerAddress string
+	topic         string
+	capacity      int
 )
 
 func parseFlags() {
 	flag.StringVar(&endpoint, "endpoint", "opc.tcp://localhost:53530/OPCUA/SimulationServer",
 		"Address of the OPC UA server")
-	flag.StringVar(&dbaddress, "dbaddress", "http://localhost:8086",
+	flag.StringVar(&dbAddress, "dbAddress", "http://localhost:8086",
 		"Addres of the database server")
 	flag.StringVar(&database, "database", "system_indicators", "Name of the database to store data")
+	flag.StringVar(&brokerAddress, "brokerhost", "", "Address of the message broker")
+	flag.StringVar(&topic, "topic", "measures", "Name of the topic to spread measures across the system")
 	flag.IntVar(&capacity, "capacity", 60, "Number of points per measurment series")
 
 	flag.Parse()
@@ -74,12 +79,18 @@ func main() {
 	monitor := monitoring.NewOpcuaMonitor(ctx, endpoint, logger, interval)
 
 	// Create a database client and connect to the database.
-	dbclient := storage.NewDbClient(dbaddress, database, logger, capacity)
+	dbclient := storage.NewDbClient(dbAddress, database, logger, capacity)
 	dbclient.Connect()
 	defer dbclient.CloseConnection()
 
+	// Create a publisher to spread measures across the application.
+	pb := publisher.NewPublisher(brokerAddress, topic, logger)
+	pb.Connect()
+	defer pb.CloseConnection()
+
 	// Start the monitor.
 	err = monitor.Connect()
+	defer monitor.CloseConnection()
 	handleError(logger, "Couldn't connect to the server", err)
 	monitor.Start()
 	defer monitor.Stop()
@@ -106,6 +117,12 @@ func main() {
 
 	monitor.AddSubscriber(channel)
 	dbclient.Start()
+
+	// Publisher.
+	channel = pb.GetChannel()
+
+	monitor.AddSubscriber(channel)
+	pb.Start()
 
 	time.Sleep(20 * time.Second)
 }

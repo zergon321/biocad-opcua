@@ -47,13 +47,14 @@ func (publisher *Publisher) Start() {
 				continue
 			}
 
-			publisher.conn.Publish(publisher.topic, data)
+			err = publisher.conn.Publish(publisher.topic, data)
+			publisher.handlePublishError(err)
 		}
 	}()
 }
 
-// Stop stops sending incoming messages to subscribers.
-func (publisher *Publisher) Stop() {
+// CloseConnection closes the connection woth the message broker.
+func (publisher *Publisher) CloseConnection() {
 	publisher.conn.Close()
 }
 
@@ -76,5 +77,11 @@ func (publisher *Publisher) handleConnectionError(err error) {
 func (publisher *Publisher) handleJSONMarshalError(err error) {
 	if err != nil {
 		publisher.logger.Println("Couldn't serialize the data yo JSON", err)
+	}
+}
+
+func (publisher *Publisher) handlePublishError(err error) {
+	if err != nil {
+		publisher.logger.Println("Couldn't send the message to subscribers:", err)
 	}
 }
