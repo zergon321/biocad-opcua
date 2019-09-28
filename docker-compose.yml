@@ -5,6 +5,7 @@ services:
   opcua-monitor:
     depends_on:
       - influxdb
+      - nats
     build:
       context: .
       dockerfile: ./opcua-monitor/Dockerfile
@@ -18,12 +19,15 @@ services:
       - --endpoint=opc.tcp://192.168.0.103:53530/OPCUA/SimulationServer
       - --dbaddress=http://influxdb:8086
       - --database=system_indicators
+      - --brokerhost=nats://nats:4222
+      - --topic=measures
       - --capacity=5
 
   web-server:
     depends_on:
       - opcua-monitor
       - influxdb
+      - nats
     build:
       context: .
       dockerfile: ./web-server/Dockerfile
