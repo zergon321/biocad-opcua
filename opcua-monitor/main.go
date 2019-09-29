@@ -35,7 +35,7 @@ var (
 func parseFlags() {
 	flag.StringVar(&endpoint, "endpoint", "opc.tcp://localhost:53530/OPCUA/SimulationServer",
 		"Address of the OPC UA server")
-	flag.StringVar(&dbAddress, "dbAddress", "http://localhost:8086",
+	flag.StringVar(&dbAddress, "dbaddress", "http://localhost:8086",
 		"Addres of the database server")
 	flag.StringVar(&database, "database", "system_indicators", "Name of the database to store data")
 	flag.StringVar(&brokerAddress, "brokerhost", "", "Address of the message broker")
