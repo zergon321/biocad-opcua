@@ -52,6 +52,26 @@ func (ctl *MeasuresController) measures(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
+// getAllParameters sends a list of the monitored parameters to the client.
+func (ctl *MeasuresController) getAllParameters(w http.ResponseWriter, r *http.Request) {
+	var parameters []string
+
+	for parameter := range ctl.bounds {
+		parameters = append(parameters, parameter)
+	}
+
+	data, err := json.MarshalIndent(parameters, "", "    ")
+
+	if err != nil {
+		ctl.handleInternalError("Couldn't marshal data to JSON", err)
+		ctl.handleWebError(w, http.StatusInternalServerError, "Couldn't marshal data to JSON")
+
+		return
+	}
+
+	ctl.sendData(w, data)
+}
+
 // getBoundsForParameter sends the parameter alerting bounds to the client.
 func (ctl *MeasuresController) getBoundsForParameter(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -140,6 +160,7 @@ func (ctl *MeasuresController) SetupRoutes(router *mux.Router) {
 	router.HandleFunc("/measures", ctl.measures)
 	router.HandleFunc("/{parameter:[A-Z][a-z]+}/bounds", ctl.changeBoundsForParameter).Methods("PATCH")
 	router.HandleFunc("/{parameter:[A-Z][a-z]+}/bounds", ctl.getBoundsForParameter).Methods("GET")
+	router.HandleFunc("/parameters", ctl.getAllParameters).Methods("GET")
 }
 
 // NewMeasuresController returns a new measures controller for the monitored parameters.
