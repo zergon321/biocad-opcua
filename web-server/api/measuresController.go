@@ -88,13 +88,13 @@ func (ctl *MeasuresController) changeBoundsForParameter(w http.ResponseWriter, r
 	parameter, ok := vars["parameter"]
 
 	if !ok {
-		ctl.handleWebError(w, http.StatusNotFound,
+		ctl.handleWebError(w, http.StatusBadRequest,
 			fmt.Sprint("Parameter is missing", parameter))
 
 		return
 	}
 
-	if _, ok := ctl.bounds["parameter"]; !ok {
+	if _, ok := ctl.bounds[parameter]; !ok {
 		ctl.handleWebError(w, http.StatusNotFound,
 			fmt.Sprintf("Parameter '%s' is not monitored on the server", parameter))
 
