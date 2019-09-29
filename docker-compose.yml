@@ -33,6 +33,9 @@ services:
       dockerfile: ./web-server/Dockerfile
     image: web-server
     container_name: web_server
+    command:
+      - --brokerhost=nats://nats:4222
+      - --topic=measures
 
   nats:
     image: nats

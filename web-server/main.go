@@ -16,20 +16,15 @@ import (
 // Application configuration constants.
 const (
 	PREFIX = "web-server: "
-	LOG    = "var/log/web-server/sys.log"
+	LOG    = "/var/log/web/sys.log"
 )
 
 var (
-	dbAddress     string
-	database      string
 	brokerAddress string
 	topic         string
 )
 
 func parseFlags() {
-	flag.StringVar(&dbAddress, "dbAddress", "http://localhost:8086",
-		"Addres of the database server")
-	flag.StringVar(&database, "database", "system_indicators", "Name of the database to store data")
 	flag.StringVar(&brokerAddress, "brokerhost", "", "Address of the message broker")
 	flag.StringVar(&topic, "topic", "measures", "Name of the topic to spread measures across the system")
 
