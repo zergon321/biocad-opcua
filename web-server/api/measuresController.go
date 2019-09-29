@@ -141,9 +141,11 @@ func (ctl *MeasuresController) changeBoundsForParameter(w http.ResponseWriter, r
 
 // SetupRoutes sets up HTTP routes for the controller.
 func (ctl *MeasuresController) SetupRoutes(router *mux.Router) {
+	router.Use(jsonMiddleware)
+
 	router.HandleFunc("/measures", ctl.measures)
-	router.HandleFunc("/change_bounds", ctl.changeBoundsForParameter)
-	router.HandleFunc("/bounds", ctl.getBoundsForParameter)
+	router.HandleFunc("/change_bounds", ctl.changeBoundsForParameter).Methods("PATCH")
+	router.HandleFunc("/bounds", ctl.getBoundsForParameter).Methods("GET")
 }
 
 // NewMeasuresController returns a new measures controller for the monitored parameters.
