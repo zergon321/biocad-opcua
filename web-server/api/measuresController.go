@@ -5,9 +5,9 @@ import (
 	"biocad-opcua/web-server/subscriber"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -51,14 +51,16 @@ func (ctl *MeasuresController) measures(w http.ResponseWriter, r *http.Request) 
 
 // getBoundsForParameter sends the parameter alerting bounds to the client.
 func (ctl *MeasuresController) getBoundsForParameter(w http.ResponseWriter, r *http.Request) {
-	parameters, ok := r.URL.Query()["parameter"]
+	vars := mux.Vars(r)
+	parameter, ok := vars["parameter"]
 
-	if !ok || len(parameters) < 1 {
-		ctl.handleWebError(w, http.StatusBadRequest, "Argument 'parameter' is missing")
+	if !ok {
+		ctl.handleWebError(w, http.StatusNotFound,
+			fmt.Sprint("Parameter is missing", parameter))
+
 		return
 	}
 
-	parameter := parameters[0]
 	bounds, ok := ctl.bounds[parameter]
 
 	if !ok {
@@ -82,30 +84,15 @@ func (ctl *MeasuresController) getBoundsForParameter(w http.ResponseWriter, r *h
 
 // changeBoundsForParameter changes the alert bounds for the specified parameter.
 func (ctl *MeasuresController) changeBoundsForParameter(w http.ResponseWriter, r *http.Request) {
-	parameters, ok := r.URL.Query()["parameter"]
+	vars := mux.Vars(r)
+	parameter, ok := vars["parameter"]
 
-	if !ok || len(parameters) < 1 {
-		ctl.handleWebError(w, http.StatusBadRequest, "Argument 'parameter' is missing")
+	if !ok {
+		ctl.handleWebError(w, http.StatusNotFound,
+			fmt.Sprint("Parameter is missing", parameter))
+
 		return
 	}
-
-	lowerBounds, ok := r.URL.Query()["lower_bound"]
-
-	if !ok || len(lowerBounds) < 1 {
-		ctl.handleWebError(w, http.StatusBadRequest, "Argument 'lower_bound' is missing")
-		return
-	}
-
-	upperBounds, ok := r.URL.Query()["upper_bound"]
-
-	if !ok || len(upperBounds) < 1 {
-		ctl.handleWebError(w, http.StatusBadRequest, "Argument 'upper_bound' is missing")
-		return
-	}
-
-	parameter := parameters[0]
-	lowerBoundStr := lowerBounds[0]
-	upperBoundStr := upperBounds[0]
 
 	if _, ok := ctl.bounds["parameter"]; !ok {
 		ctl.handleWebError(w, http.StatusNotFound,
@@ -114,29 +101,24 @@ func (ctl *MeasuresController) changeBoundsForParameter(w http.ResponseWriter, r
 		return
 	}
 
-	lowerBound, err := strconv.ParseFloat(lowerBoundStr, 64)
+	data, err := ioutil.ReadAll(r.Body)
 
 	if err != nil {
-		ctl.handleWebError(w, http.StatusBadRequest, "Argument 'lower_bound' is incorrect")
+		ctl.handleWebError(w, http.StatusBadRequest, "Couldn't read request body")
 		return
 	}
 
-	upperBound, err := strconv.ParseFloat(upperBoundStr, 64)
+	var bounds model.Bounds
+	err = json.Unmarshal(data, &bounds)
 
 	if err != nil {
-		ctl.handleWebError(w, http.StatusBadRequest, "Argument 'upper_bound' is incorrect")
+		ctl.handleInternalError("Couldn't parse JSON", err)
+		ctl.handleWebError(w, http.StatusBadRequest, "Couldn't parse JSON data")
+
 		return
 	}
 
-	if upperBound <= lowerBound {
-		ctl.handleWebError(w, http.StatusBadRequest, "Argument 'lower_bound' should be less than 'upper_bound'")
-		return
-	}
-
-	ctl.bounds[parameter] = model.Bounds{
-		LowerBound: lowerBound,
-		UpperBound: upperBound,
-	}
+	ctl.bounds[parameter] = bounds
 }
 
 // SetupRoutes sets up HTTP routes for the controller.
@@ -144,8 +126,8 @@ func (ctl *MeasuresController) SetupRoutes(router *mux.Router) {
 	router.Use(jsonMiddleware)
 
 	router.HandleFunc("/measures", ctl.measures)
-	router.HandleFunc("/change_bounds", ctl.changeBoundsForParameter).Methods("PATCH")
-	router.HandleFunc("/bounds", ctl.getBoundsForParameter).Methods("GET")
+	router.HandleFunc("/{parameter:[A-Z][a-z]+}/bounds", ctl.changeBoundsForParameter).Methods("PATCH")
+	router.HandleFunc("/{parameter:[A-Z][a-z]+}/bounds", ctl.getBoundsForParameter).Methods("GET")
 }
 
 // NewMeasuresController returns a new measures controller for the monitored parameters.
