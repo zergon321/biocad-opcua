@@ -149,10 +149,11 @@ func (ctl *MeasuresController) SetupRoutes(router *mux.Router) {
 }
 
 // NewMeasuresController returns a new measures controller for the monitored parameters.
-func NewMeasuresController(sub *subscriber.Subscriber, logger *log.Logger) *MeasuresController {
+func NewMeasuresController(sub *subscriber.Subscriber, logger *log.Logger, bounds map[string]model.Bounds) *MeasuresController {
 	ctl := new(MeasuresController)
 	ctl.sub = sub
 	ctl.logger = logger
+	ctl.bounds = bounds
 
 	return ctl
 }

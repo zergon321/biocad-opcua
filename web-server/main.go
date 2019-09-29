@@ -2,6 +2,7 @@ package main
 
 import (
 	"biocad-opcua/web-server/api"
+	"biocad-opcua/web-server/model"
 	"biocad-opcua/web-server/subscriber"
 	"flag"
 	"io"
@@ -55,7 +56,17 @@ func main() {
 	defer sub.CloseConnection()
 
 	// Create a data controller.
-	measuresController := api.NewMeasuresController(sub, logger)
+	bounds := map[string]model.Bounds{
+		"Temperature": model.Bounds{
+			UpperBound: 100,
+			LowerBound: 0,
+		},
+		"Humidity": model.Bounds{
+			UpperBound: 86,
+			LowerBound: 16,
+		},
+	}
+	measuresController := api.NewMeasuresController(sub, logger, bounds)
 
 	// Assign routing paths.
 	router := mux.NewRouter()
