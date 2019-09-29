@@ -35,6 +35,9 @@ func (ctl *MeasuresController) measures(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	ctl.logger.Println("Opened a new websocket connection")
+	defer ctl.logger.Println("Websocket connection closed")
+
 	source := ctl.sub.GetChannel()
 	ctl.sub.Start()
 	defer ctl.sub.Stop()
@@ -107,6 +110,8 @@ func (ctl *MeasuresController) changeBoundsForParameter(w http.ResponseWriter, r
 		ctl.handleWebError(w, http.StatusBadRequest, "Couldn't read request body")
 		return
 	}
+
+	ctl.logger.Println("Request sent by the client", string(data))
 
 	var bounds model.Bounds
 	err = json.Unmarshal(data, &bounds)
