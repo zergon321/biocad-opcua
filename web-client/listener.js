@@ -1,4 +1,4 @@
-var socket = new WebSocket("ws://127.0.0.1:5000/measures");
+var socket = new WebSocket("ws://127.0.0.1:8080/measures");
 var output = document.getElementById("data-field");
 var writeMessage = function(message) {
     output.innerHTML += "<p>service: " + message + "</p>";
