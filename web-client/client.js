@@ -25,11 +25,3 @@ socket.onmessage = function(event) {
 socket.onerror = function(error) {
     writeMessage("error occurred: " + error.message);
 }
-
-function changeBounds() {
-    let parameter = document.getElementById("parameter");
-    let lowerBound = document.getElementById("lower-bound");
-    let upperBound = document.getElementById("upper-bound");
-
-    
-}
