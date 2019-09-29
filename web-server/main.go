@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/gorilla/mux"
 )
@@ -33,6 +34,19 @@ func parseFlags() {
 
 func main() {
 	parseFlags()
+
+	// Change working directory to the application directory.
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+
+	if err != nil {
+		log.Fatalln("Couldn't get current application folder path:", err)
+	}
+
+	err = os.Chdir(dir)
+
+	if err != nil {
+		log.Fatalln("Couldn't change directory to bin:", err)
+	}
 
 	// Create a log file and a logger.
 	file, err := os.OpenFile(LOG, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
