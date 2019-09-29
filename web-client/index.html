@@ -5,7 +5,24 @@
         <title>Parameters</title>
     </head>
     <body>
+        <script src="jquery-3.4.1.min.js" defer></script>
+        <script src="client.js" defer></script>
+
+        <form>
+            <p>
+                <label for="parameter">Parameter</label>
+                <input id="parameter" type="text">
+
+                <label for="lower-bound">Lower bound</label>
+                <input id="lower-bound" type="number">
+
+                <label for="upper-bound">Upper bound</label>
+                <input id="upper-bound" type="number">
+
+                <input type="button" value="Send" onclick="sendMessage();">
+            </p>
+        </form>
+
         <div id="data-field"></div>
-        <script src="listener.js"></script>
     </body>
 </html>
