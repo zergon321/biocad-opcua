@@ -5,4 +5,5 @@ ENTRYPOINT [ "/go/bin/web" ]
 
 FROM alpine:latest
 COPY --from=builder /go/bin/web /bin/web
+COPY --from=builder /go/src/biocad-opcua/web-client /bin/client
 ENTRYPOINT [ "/bin/web" ]
