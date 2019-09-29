@@ -72,7 +72,7 @@ func (monitor *OpcuaMonitor) CloseConnection() {
 // MonitorParameter makes the monitor receive updates
 // of the specified parameter from the server.
 func (monitor *OpcuaMonitor) MonitorParameter(parameter string) error {
-	id, err := ua.ParseNodeID("ns=5;s=" + parameter)
+	id, err := ua.ParseNodeID("ns=3;s=" + parameter)
 	monitor.handleSubscriptionError(err)
 
 	if err != nil {
