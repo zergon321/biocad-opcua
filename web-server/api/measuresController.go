@@ -3,6 +3,7 @@ package api
 import (
 	"biocad-opcua/web-server/model"
 	"biocad-opcua/web-server/subscriber"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -46,6 +47,37 @@ func (ctl *MeasuresController) measures(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 	}
+}
+
+// getBoundsForParameter sends the parameter alerting bounds to the client.
+func (ctl *MeasuresController) getBoundsForParameter(w http.ResponseWriter, r *http.Request) {
+	parameters, ok := r.URL.Query()["parameter"]
+
+	if !ok || len(parameters) < 1 {
+		ctl.handleWebError(w, http.StatusBadRequest, "Argument 'parameter' is missing")
+		return
+	}
+
+	parameter := parameters[0]
+	bounds, ok := ctl.bounds[parameter]
+
+	if !ok {
+		ctl.handleWebError(w, http.StatusNotFound,
+			fmt.Sprintf("Parameter '%s' is not monitored on the server", parameter))
+
+		return
+	}
+
+	data, err := json.MarshalIndent(bounds, "", "    ")
+
+	if err != nil {
+		ctl.handleInternalError("Couldn't marshal the object to JSON", err)
+		ctl.handleWebError(w, http.StatusInternalServerError, "Couldn't build a JSON response")
+
+		return
+	}
+
+	ctl.sendData(w, data)
 }
 
 // changeBoundsForParameter changes the alert bounds for the specified parameter.
@@ -111,6 +143,7 @@ func (ctl *MeasuresController) changeBoundsForParameter(w http.ResponseWriter, r
 func (ctl *MeasuresController) SetupRoutes(router *mux.Router) {
 	router.HandleFunc("/measures", ctl.measures)
 	router.HandleFunc("/change_bounds", ctl.changeBoundsForParameter)
+	router.HandleFunc("/bounds", ctl.getBoundsForParameter)
 }
 
 // NewMeasuresController returns a new measures controller for the monitored parameters.
