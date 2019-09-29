@@ -118,6 +118,13 @@ func (ctl *MeasuresController) changeBoundsForParameter(w http.ResponseWriter, r
 		return
 	}
 
+	if bounds.UpperBound <= bounds.LowerBound {
+		ctl.handleWebError(w, http.StatusBadRequest,
+			"Lower alerting bound must be less than upper alerting bound")
+
+		return
+	}
+
 	ctl.bounds[parameter] = bounds
 }
 
