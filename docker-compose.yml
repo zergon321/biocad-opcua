@@ -32,6 +32,12 @@ services:
       context: .
       dockerfile: ./web-server/Dockerfile
     image: web-server
+    ports:
+      - 8080:8080
+    volumes:
+      - type: volume
+        source: web-logs
+        target: /var/log/web
     container_name: web_server
     command:
       - --brokerhost=nats://nats:4222
