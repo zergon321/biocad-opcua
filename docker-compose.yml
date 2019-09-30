@@ -22,6 +22,16 @@ services:
       - --brokerhost=nats://nats:4222
       - --topic=measures
       - --capacity=5
+  
+  alerter:
+    depends_on:
+      - influxdb
+      - redis
+    build:
+      context: .
+      dockerfile: ./alerter/Dockerfile
+    image: alerter
+    conteiner_name: alert_server
 
   web-server:
     depends_on:
@@ -55,6 +65,16 @@ services:
     command:
       - --log=/var/log/nats/log.txt
 
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - type: volume
+        source: redis-logs
+        target: /var/log/redis
+    container_name: redis_server
+
   influxdb:
     image: influxdb:1.7.8-alpine
     ports:
@@ -81,6 +101,7 @@ services:
 
 volumes:
   nats-logs:
+  redis-logs:
   web-logs:
   opcua-logs:
   influxdb-data:
