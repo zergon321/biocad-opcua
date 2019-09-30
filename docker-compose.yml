@@ -31,7 +31,7 @@ services:
       context: .
       dockerfile: ./alerter/Dockerfile
     image: alerter
-    conteiner_name: alert_server
+    container_name: alert_server
 
   web-server:
     depends_on:
