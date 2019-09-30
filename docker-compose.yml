@@ -73,6 +73,9 @@ services:
       - type: volume
         source: redis-logs
         target: /var/log/redis
+      - type: volume
+        source: redis-data
+        target: /var/lib/redis
     container_name: redis_server
 
   influxdb:
@@ -102,6 +105,7 @@ services:
 volumes:
   nats-logs:
   redis-logs:
+  redis-data:
   web-logs:
   opcua-logs:
   influxdb-data:
