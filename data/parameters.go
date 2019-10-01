@@ -45,7 +45,7 @@ type ParametersState struct {
 	Parameters map[string]float64
 }
 
-// ToDataPoint transforms ParametersState object into time-series data point.
+// ToDataPoint transforms ParametersState object into a time-series data point.
 func (params ParametersState) ToDataPoint() (*influxdb.Point, error) {
 	fields := make(map[string]interface{})
 
