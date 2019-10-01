@@ -41,7 +41,7 @@ func (fanout *Fanout) RemoveChannel(channel chan<- data.Measurement) error {
 	return nil
 }
 
-// SendMeasure sends a new measure to all the channels of the fanout.
+// SendMeasurement sends a new measure to all the channels of the fanout.
 func (fanout *Fanout) SendMeasurement(measurement data.Measurement) {
 	for _, channel := range fanout.channels {
 		go func(ch chan<- data.Measurement) {
