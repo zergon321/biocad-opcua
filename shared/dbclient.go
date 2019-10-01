@@ -1,25 +1,11 @@
-package storage
+package shared
 
 import (
 	"biocad-opcua/data"
 	"log"
-	"strings"
 
 	influxdb "github.com/influxdata/influxdb1-client/v2"
 )
-
-func measureToPoint(measure data.Measure) (*influxdb.Point, error) {
-	fields := make(map[string]interface{})
-
-	for parameter, value := range measure.Parameters {
-		param := strings.ToLower(parameter)
-		fields[param] = value
-	}
-
-	point, err := influxdb.NewPoint("parameters", nil, fields, measure.Timestamp)
-
-	return point, err
-}
 
 // DbClient represents a client for the time-series database.
 type DbClient struct {
@@ -27,7 +13,7 @@ type DbClient struct {
 	database       string
 	logger         *log.Logger
 	influxClient   influxdb.Client
-	subscription   chan data.Measure
+	subscription   chan data.Measurement
 	pointsInSeries int
 	stop           chan interface{}
 }
@@ -53,12 +39,12 @@ func (dbclient *DbClient) CloseConnection() {
 	dbclient.influxClient.Close()
 }
 
-// GetSubscriptionChannel returns the channel to accept measures and write them to the time-series database.
-func (dbclient *DbClient) GetSubscriptionChannel() chan<- data.Measure {
+// GetSubscriptionChannel returns the channel to accept measurements and write them to the time-series database.
+func (dbclient *DbClient) GetSubscriptionChannel() chan<- data.Measurement {
 	return dbclient.subscription
 }
 
-// Start starts accepting measures and writing them to the time-series database.
+// Start starts accepting measurements and writing them to the time-series database.
 func (dbclient *DbClient) Start() {
 	go func() {
 		var (
@@ -80,7 +66,7 @@ func (dbclient *DbClient) Start() {
 
 		for {
 			select {
-			case measure := <-dbclient.subscription:
+			case measurement := <-dbclient.subscription:
 				// If series is full - write it to the database and create a new one.
 				if (counter+1)%dbclient.pointsInSeries == 0 {
 					err = dbclient.influxClient.Write(series)
@@ -98,7 +84,7 @@ func (dbclient *DbClient) Start() {
 				}
 
 				// If the series is not full yet, add a new point to the series.
-				point, err := measureToPoint(measure)
+				point, err := measurement.ToDataPoint()
 				dbclient.handleCreatePointError(err)
 
 				if err != nil {
@@ -115,7 +101,7 @@ func (dbclient *DbClient) Start() {
 	}()
 }
 
-// Stop stops writing measures to the database.
+// Stop stops writing measurements to the database.
 func (dbclient *DbClient) Stop() {
 	dbclient.stop <- true
 }
@@ -127,7 +113,7 @@ func NewDbClient(address, database string, logger *log.Logger, pointsInSeries in
 		database:       database,
 		logger:         logger,
 		pointsInSeries: pointsInSeries,
-		subscription:   make(chan data.Measure),
+		subscription:   make(chan data.Measurement),
 		stop:           make(chan interface{}),
 	}
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"biocad-opcua/data"
 	"biocad-opcua/opcua-monitor/monitoring"
-	"biocad-opcua/opcua-monitor/storage"
 	"biocad-opcua/shared"
 	"context"
 	"encoding/json"
@@ -80,7 +79,7 @@ func main() {
 	monitor := monitoring.NewOpcuaMonitor(ctx, endpoint, logger, interval)
 
 	// Create a database client and connect to the database.
-	dbclient := storage.NewDbClient(dbAddress, database, logger, capacity)
+	dbclient := shared.NewDbClient(dbAddress, database, logger, capacity)
 	dbclient.Connect()
 	defer dbclient.CloseConnection()
 
@@ -102,11 +101,17 @@ func main() {
 
 	// Console subscriber.
 	go func() {
-		channel := make(chan data.Measure)
+		channel := make(chan data.Measurement)
 		monitor.AddSubscriber(channel)
 
 		for measure := range channel {
-			bytes, err := json.MarshalIndent(measure, "", "    ")
+			params, ok := measure.(data.ParametersState)
+
+			if !ok {
+				handleError(logger, "Couldn't assert the type", fmt.Errorf("invalid type cast"))
+			}
+
+			bytes, err := json.MarshalIndent(params, "", "    ")
 			handleError(logger, "Couldn't marshal the object to JSON", err)
 
 			fmt.Println("alpha", string(bytes))

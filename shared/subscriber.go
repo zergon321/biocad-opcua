@@ -49,10 +49,10 @@ func (subscriber *Subscriber) Start() {
 		for {
 			select {
 			case message := <-source:
-				var measure data.Measure
+				var measure data.Measurement
 				err = json.Unmarshal(message.Data, &measure)
 
-				subscriber.fanout.SendMeasure(measure)
+				subscriber.fanout.SendMeasurement(measure)
 
 			case <-subscriber.stop:
 				break
@@ -62,12 +62,12 @@ func (subscriber *Subscriber) Start() {
 }
 
 // AddChannelSubscriber adds the given channel to the message broker client's fanout.
-func (subscriber *Subscriber) AddChannelSubscriber(channel chan<- data.Measure) {
+func (subscriber *Subscriber) AddChannelSubscriber(channel chan<- data.Measurement) {
 	subscriber.fanout.AddChannel(channel)
 }
 
 // RemoveChannelSubscriber removes the given channel from the message broker client's fanout.
-func (subscriber *Subscriber) RemoveChannelSubscriber(channel chan<- data.Measure) error {
+func (subscriber *Subscriber) RemoveChannelSubscriber(channel chan<- data.Measurement) error {
 	err := subscriber.fanout.RemoveChannel(channel)
 	subscriber.handleRemoveSubscriptionError(err)
 

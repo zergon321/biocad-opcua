@@ -106,13 +106,13 @@ func (monitor *OpcuaMonitor) MonitorParameter(parameter string) error {
 	return nil
 }
 
-// AddSubscriber adds a new subscriber for him to receive measures.
-func (monitor *OpcuaMonitor) AddSubscriber(channel chan<- data.Measure) {
+// AddSubscriber adds a new subscriber for him to receive parameters.
+func (monitor *OpcuaMonitor) AddSubscriber(channel chan<- data.Measurement) {
 	monitor.fanout.AddChannel(channel)
 }
 
-// RemoveSubscriber removes the subscriber for him to stop receiving measures.
-func (monitor *OpcuaMonitor) RemoveSubscriber(channel chan<- data.Measure) error {
+// RemoveSubscriber removes the subscriber for him to stop receiving parameters.
+func (monitor *OpcuaMonitor) RemoveSubscriber(channel chan<- data.Measurement) error {
 	err := monitor.fanout.RemoveChannel(channel)
 	monitor.handleRemoveSubscriptionError(err)
 
@@ -142,7 +142,7 @@ func (monitor *OpcuaMonitor) Start() {
 			case message := <-monitor.subscription.Notifs:
 				switch mes := message.Value.(type) {
 				case *ua.DataChangeNotification:
-					monitor.sendMeasureToFanout(mes)
+					monitor.sendParametersToFanout(mes)
 
 				default:
 					monitor.logger.Println("Unknown message type")
@@ -160,8 +160,8 @@ func (monitor *OpcuaMonitor) Stop() {
 	monitor.stopped = true
 }
 
-func (monitor *OpcuaMonitor) sendMeasureToFanout(message *ua.DataChangeNotification) {
-	measure := data.Measure{
+func (monitor *OpcuaMonitor) sendParametersToFanout(message *ua.DataChangeNotification) {
+	measure := data.ParametersState{
 		Timestamp:  time.Now(),
 		Parameters: make(map[string]float64),
 	}
@@ -174,7 +174,7 @@ func (monitor *OpcuaMonitor) sendMeasureToFanout(message *ua.DataChangeNotificat
 		measure.Parameters[parameter] = value
 	}
 
-	monitor.fanout.SendMeasure(measure)
+	monitor.fanout.SendMeasurement(measure)
 }
 
 func (monitor *OpcuaMonitor) handleConnectionError(err error) {

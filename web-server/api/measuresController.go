@@ -45,12 +45,21 @@ func (ctl *MeasuresController) measures(w http.ResponseWriter, r *http.Request) 
 	ctl.logger.Println("Opened a new websocket connection")
 	defer ctl.logger.Println("Websocket connection closed")
 
-	source := make(chan data.Measure)
+	source := make(chan data.Measurement)
 	ctl.sub.AddChannelSubscriber(source)
 	defer ctl.sub.RemoveChannelSubscriber(source)
 
 	for measure := range source {
-		err = conn.WriteJSON(measure)
+		params, ok := measure.(data.ParametersState)
+
+		if !ok {
+			ctl.handleInternalError("Type assertion failed", fmt.Errorf("invalid data type"))
+			ctl.handleWebsocketSendMessageError(fmt.Errorf("Type assertion failed"))
+
+			return
+		}
+
+		err = conn.WriteJSON(params)
 		ctl.handleWebsocketSendMessageError(err)
 
 		if err != nil {

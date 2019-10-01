@@ -13,7 +13,7 @@ type Publisher struct {
 	address string
 	conn    *nats.Conn
 	logger  *log.Logger
-	source  chan data.Measure
+	source  chan data.Measurement
 	topic   string
 	stop    chan interface{}
 }
@@ -33,7 +33,7 @@ func (publisher *Publisher) Connect() error {
 }
 
 // GetChannel returns a channel to send data to other microservices.
-func (publisher *Publisher) GetChannel() chan<- data.Measure {
+func (publisher *Publisher) GetChannel() chan<- data.Measurement {
 	return publisher.source
 }
 
@@ -43,7 +43,14 @@ func (publisher *Publisher) Start() {
 		for {
 			select {
 			case measure := <-publisher.source:
-				data, err := json.MarshalIndent(measure, "", "    ")
+				params, ok := measure.(data.ParametersState)
+
+				if !ok {
+					publisher.logger.Println("Type assertion failed for", measure)
+					continue
+				}
+
+				data, err := json.MarshalIndent(params, "", "    ")
 				publisher.handleJSONMarshalError(err)
 
 				if err != nil {
@@ -76,7 +83,7 @@ func NewPublisher(address, topic string, logger *log.Logger) *Publisher {
 		address: address,
 		topic:   topic,
 		logger:  logger,
-		source:  make(chan data.Measure),
+		source:  make(chan data.Measurement),
 		stop:    make(chan interface{}),
 	}
 }

@@ -7,16 +7,16 @@ import (
 
 // Fanout manages the channels that receive the data you send.
 type Fanout struct {
-	channels []chan<- data.Measure
+	channels []chan<- data.Measurement
 }
 
 // AddChannel adds a new channel in the fanout.
-func (fanout *Fanout) AddChannel(channel chan<- data.Measure) {
+func (fanout *Fanout) AddChannel(channel chan<- data.Measurement) {
 	fanout.channels = append(fanout.channels, channel)
 }
 
 // RemoveChannel removes the channel from the fanout.
-func (fanout *Fanout) RemoveChannel(channel chan<- data.Measure) error {
+func (fanout *Fanout) RemoveChannel(channel chan<- data.Measurement) error {
 	var (
 		index int
 		found bool
@@ -42,10 +42,10 @@ func (fanout *Fanout) RemoveChannel(channel chan<- data.Measure) error {
 }
 
 // SendMeasure sends a new measure to all the channels of the fanout.
-func (fanout *Fanout) SendMeasure(measure data.Measure) {
+func (fanout *Fanout) SendMeasurement(measurement data.Measurement) {
 	for _, channel := range fanout.channels {
-		go func(ch chan<- data.Measure) {
-			ch <- measure
+		go func(ch chan<- data.Measurement) {
+			ch <- measurement
 		}(channel)
 	}
 }
@@ -53,6 +53,6 @@ func (fanout *Fanout) SendMeasure(measure data.Measure) {
 // NewFanout creates a new fanout to serve data to registered channels.
 func NewFanout() *Fanout {
 	return &Fanout{
-		channels: make([]chan<- data.Measure, 0),
+		channels: make([]chan<- data.Measurement, 0),
 	}
 }

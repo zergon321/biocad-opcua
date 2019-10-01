@@ -1,6 +1,11 @@
 package data
 
-import "time"
+import (
+	"strings"
+	"time"
+
+	influxdb "github.com/influxdata/influxdb1-client/v2"
+)
 
 const (
 	// Temperature is a physical quantity expressing hot and cold.
@@ -29,8 +34,27 @@ const (
 	Frequency = "Frequency"
 )
 
-// Measure represents the state of the parameter at a certain moment of time.
-type Measure struct {
+// Measurement represents an object which can treated as a data portion for a time-series database.
+type Measurement interface {
+	ToDataPoint() (*influxdb.Point, error)
+}
+
+// ParametersState represents the state of the system parameters at a certain moment of time.
+type ParametersState struct {
 	Timestamp  time.Time
 	Parameters map[string]float64
+}
+
+// ToDataPoint transforms ParametersState object into time-series data point.
+func (params ParametersState) ToDataPoint() (*influxdb.Point, error) {
+	fields := make(map[string]interface{})
+
+	for parameter, value := range params.Parameters {
+		param := strings.ToLower(parameter)
+		fields[param] = value
+	}
+
+	point, err := influxdb.NewPoint("parameters", nil, fields, params.Timestamp)
+
+	return point, err
 }
