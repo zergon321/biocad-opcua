@@ -49,8 +49,13 @@ func (subscriber *Subscriber) Start() {
 		for {
 			select {
 			case message := <-source:
-				var measure data.Measurement
+				var measure data.ParametersState
 				err = json.Unmarshal(message.Data, &measure)
+				subscriber.handleJSONUnmarshalError(err)
+
+				if err != nil {
+					continue
+				}
 
 				subscriber.fanout.SendMeasurement(measure)
 
