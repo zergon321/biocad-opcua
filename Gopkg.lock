@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/go-redis/redis"
+  packages = [".","internal","internal/consistenthash","internal/hashtag","internal/pool","internal/proto","internal/util"]
+  revision = "17c058513b3e03c5e23136c18582fdd8ac8a3645"
+  version = "v6.15.5"
+
+[[projects]]
   name = "github.com/gopcua/opcua"
   packages = [".","debug","id","ua","uacp","uapolicy","uasc"]
   revision = "553a90f27b81370cb5fc5571104dbdbfdf31a9fd"
@@ -52,6 +58,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "cb1610c5b0ab071b6960bdcf9d0621b3801c04d895345cf2459cffba37cf78b2"
+  inputs-digest = "6ef0b6bdcbe96d04047bd4e32e54f3fb8c6ed9f0588d0504f69b61e0e1f9a480"
   solver-name = "gps-cdcl"
   solver-version = 1
