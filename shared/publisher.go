@@ -1,7 +1,7 @@
-package publisher
+package shared
 
 import (
-	"biocad-opcua/opcua-monitor/monitoring"
+	"biocad-opcua/data"
 	"encoding/json"
 	"log"
 
@@ -13,7 +13,7 @@ type Publisher struct {
 	address string
 	conn    *nats.Conn
 	logger  *log.Logger
-	source  chan monitoring.Measure
+	source  chan data.Measure
 	topic   string
 	stop    chan interface{}
 }
@@ -33,7 +33,7 @@ func (publisher *Publisher) Connect() error {
 }
 
 // GetChannel returns a channel to send data to other microservices.
-func (publisher *Publisher) GetChannel() chan<- monitoring.Measure {
+func (publisher *Publisher) GetChannel() chan<- data.Measure {
 	return publisher.source
 }
 
@@ -76,7 +76,7 @@ func NewPublisher(address, topic string, logger *log.Logger) *Publisher {
 		address: address,
 		topic:   topic,
 		logger:  logger,
-		source:  make(chan monitoring.Measure),
+		source:  make(chan data.Measure),
 		stop:    make(chan interface{}),
 	}
 }

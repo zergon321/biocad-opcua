@@ -1,8 +1,8 @@
 package api
 
 import (
+	"biocad-opcua/data"
 	"biocad-opcua/shared"
-	"biocad-opcua/web-server/model"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -23,7 +23,7 @@ var upgrader = websocket.Upgrader{
 type MeasuresController struct {
 	controller
 	sub    *shared.Subscriber
-	bounds map[string]model.Bounds
+	bounds map[string]data.Bounds
 }
 
 // measures is a Websocket handler to send monitoring data to the web client.
@@ -124,17 +124,17 @@ func (ctl *MeasuresController) changeBoundsForParameter(w http.ResponseWriter, r
 		return
 	}
 
-	data, err := ioutil.ReadAll(r.Body)
+	body, err := ioutil.ReadAll(r.Body)
 
 	if err != nil {
 		ctl.handleWebError(w, http.StatusBadRequest, "Couldn't read request body")
 		return
 	}
 
-	ctl.logger.Println("Request sent by the client", string(data))
+	ctl.logger.Println("Request sent by the client", string(body))
 
-	var bounds model.Bounds
-	err = json.Unmarshal(data, &bounds)
+	var bounds data.Bounds
+	err = json.Unmarshal(body, &bounds)
 
 	if err != nil {
 		ctl.handleInternalError("Couldn't parse JSON", err)
@@ -164,7 +164,7 @@ func (ctl *MeasuresController) SetupRoutes(router *mux.Router) {
 }
 
 // NewMeasuresController returns a new measures controller for the monitored parameters.
-func NewMeasuresController(sub *shared.Subscriber, logger *log.Logger, bounds map[string]model.Bounds) *MeasuresController {
+func NewMeasuresController(sub *shared.Subscriber, logger *log.Logger, bounds map[string]data.Bounds) *MeasuresController {
 	ctl := new(MeasuresController)
 	ctl.sub = sub
 	ctl.logger = logger

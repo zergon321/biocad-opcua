@@ -1,9 +1,10 @@
 package main
 
 import (
+	"biocad-opcua/data"
 	"biocad-opcua/opcua-monitor/monitoring"
-	"biocad-opcua/opcua-monitor/publisher"
 	"biocad-opcua/opcua-monitor/storage"
+	"biocad-opcua/shared"
 	"context"
 	"encoding/json"
 	"flag"
@@ -84,7 +85,7 @@ func main() {
 	defer dbclient.CloseConnection()
 
 	// Create a publisher to spread measures across the application.
-	pb := publisher.NewPublisher(brokerAddress, topic, logger)
+	pb := shared.NewPublisher(brokerAddress, topic, logger)
 	pb.Connect()
 	defer pb.CloseConnection()
 
@@ -96,12 +97,12 @@ func main() {
 	defer monitor.Stop()
 
 	// Monitor certain parameters.
-	monitor.MonitorParameter(monitoring.Humidity)
-	monitor.MonitorParameter(monitoring.Temperature)
+	monitor.MonitorParameter(data.Humidity)
+	monitor.MonitorParameter(data.Temperature)
 
 	// Console subscriber.
 	go func() {
-		channel := make(chan monitoring.Measure)
+		channel := make(chan data.Measure)
 		monitor.AddSubscriber(channel)
 
 		for measure := range channel {

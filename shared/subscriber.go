@@ -1,7 +1,7 @@
 package shared
 
 import (
-	"biocad-opcua/opcua-monitor/monitoring"
+	"biocad-opcua/data"
 	"encoding/json"
 	"log"
 
@@ -13,7 +13,7 @@ type Subscriber struct {
 	address  string
 	conn     *nats.Conn
 	logger   *log.Logger
-	receiver chan monitoring.Measure
+	receiver chan data.Measure
 	topic    string
 	stop     chan interface{}
 }
@@ -33,7 +33,7 @@ func (subscriber *Subscriber) Connect() error {
 }
 
 // GetChannel returns a channel to obtain data from the subscriber.
-func (subscriber *Subscriber) GetChannel() <-chan monitoring.Measure {
+func (subscriber *Subscriber) GetChannel() <-chan data.Measure {
 	return subscriber.receiver
 }
 
@@ -54,7 +54,7 @@ func (subscriber *Subscriber) Start() {
 		for {
 			select {
 			case message := <-source:
-				var measure monitoring.Measure
+				var measure data.Measure
 				err = json.Unmarshal(message.Data, &measure)
 
 				go func() {
@@ -84,7 +84,7 @@ func NewSubscriber(address, topic string, logger *log.Logger) *Subscriber {
 		address:  address,
 		topic:    topic,
 		logger:   logger,
-		receiver: make(chan monitoring.Measure),
+		receiver: make(chan data.Measure),
 		stop:     make(chan interface{}),
 	}
 }

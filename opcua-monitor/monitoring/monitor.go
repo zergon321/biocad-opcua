@@ -1,6 +1,8 @@
 package monitoring
 
 import (
+	"biocad-opcua/data"
+	"biocad-opcua/shared"
 	"context"
 	"fmt"
 	"log"
@@ -31,7 +33,7 @@ type OpcuaMonitor struct {
 	interval      time.Duration
 	parameters    map[uint32]string
 	handleCounter uint32
-	fanout        *Fanout
+	fanout        *shared.Fanout
 	stop          chan interface{}
 	stopped       bool
 }
@@ -105,12 +107,12 @@ func (monitor *OpcuaMonitor) MonitorParameter(parameter string) error {
 }
 
 // AddSubscriber adds a new subscriber for him to receive measures.
-func (monitor *OpcuaMonitor) AddSubscriber(channel chan<- Measure) {
+func (monitor *OpcuaMonitor) AddSubscriber(channel chan<- data.Measure) {
 	monitor.fanout.AddChannel(channel)
 }
 
 // RemoveSubscriber removes the subscriber for him to stop receiving measures.
-func (monitor *OpcuaMonitor) RemoveSubscriber(channel chan<- Measure) error {
+func (monitor *OpcuaMonitor) RemoveSubscriber(channel chan<- data.Measure) error {
 	err := monitor.fanout.RemoveChannel(channel)
 	monitor.handleRemoveSubscriptionError(err)
 
@@ -159,7 +161,7 @@ func (monitor *OpcuaMonitor) Stop() {
 }
 
 func (monitor *OpcuaMonitor) sendMeasureToFanout(message *ua.DataChangeNotification) {
-	measure := Measure{
+	measure := data.Measure{
 		Timestamp:  time.Now(),
 		Parameters: make(map[string]float64),
 	}
@@ -199,7 +201,7 @@ func NewOpcuaMonitor(ctx context.Context, endpoint string, logger *log.Logger, i
 		logger:        logger,
 		interval:      interval,
 		parameters:    make(map[uint32]string),
-		fanout:        NewFanout(),
+		fanout:        shared.NewFanout(),
 		handleCounter: 0,
 		stop:          make(chan interface{}),
 		stopped:       true,

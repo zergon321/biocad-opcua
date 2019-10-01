@@ -1,9 +1,9 @@
 package main
 
 import (
+	"biocad-opcua/data"
+	"biocad-opcua/shared"
 	"biocad-opcua/web-server/api"
-	"biocad-opcua/web-server/model"
-	"biocad-opcua/web-server/subscriber"
 	"flag"
 	"io"
 	"log"
@@ -60,17 +60,17 @@ func main() {
 	logger := log.New(stream, PREFIX, log.LstdFlags|log.Lshortfile)
 
 	// Create a subscriber.
-	sub := subscriber.NewSubscriber(brokerAddress, topic, logger)
+	sub := shared.NewSubscriber(brokerAddress, topic, logger)
 	sub.Connect()
 	defer sub.CloseConnection()
 
 	// Create a data controller.
-	bounds := map[string]model.Bounds{
-		"Temperature": model.Bounds{
+	bounds := map[string]data.Bounds{
+		"Temperature": data.Bounds{
 			UpperBound: 100,
 			LowerBound: 0,
 		},
-		"Humidity": model.Bounds{
+		"Humidity": data.Bounds{
 			UpperBound: 86,
 			LowerBound: 16,
 		},

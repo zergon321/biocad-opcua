@@ -1,14 +1,14 @@
 package storage
 
 import (
-	"biocad-opcua/opcua-monitor/monitoring"
+	"biocad-opcua/data"
 	"log"
 	"strings"
 
 	influxdb "github.com/influxdata/influxdb1-client/v2"
 )
 
-func measureToPoint(measure monitoring.Measure) (*influxdb.Point, error) {
+func measureToPoint(measure data.Measure) (*influxdb.Point, error) {
 	fields := make(map[string]interface{})
 
 	for parameter, value := range measure.Parameters {
@@ -27,7 +27,7 @@ type DbClient struct {
 	database       string
 	logger         *log.Logger
 	influxClient   influxdb.Client
-	subscription   chan monitoring.Measure
+	subscription   chan data.Measure
 	pointsInSeries int
 	stop           chan interface{}
 }
@@ -54,7 +54,7 @@ func (dbclient *DbClient) CloseConnection() {
 }
 
 // GetSubscriptionChannel returns the channel to accept measures and write them to the time-series database.
-func (dbclient *DbClient) GetSubscriptionChannel() chan<- monitoring.Measure {
+func (dbclient *DbClient) GetSubscriptionChannel() chan<- data.Measure {
 	return dbclient.subscription
 }
 
@@ -127,7 +127,7 @@ func NewDbClient(address, database string, logger *log.Logger, pointsInSeries in
 		database:       database,
 		logger:         logger,
 		pointsInSeries: pointsInSeries,
-		subscription:   make(chan monitoring.Measure),
+		subscription:   make(chan data.Measure),
 		stop:           make(chan interface{}),
 	}
 }
