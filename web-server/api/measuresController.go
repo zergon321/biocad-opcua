@@ -1,8 +1,8 @@
 package api
 
 import (
+	"biocad-opcua/shared"
 	"biocad-opcua/web-server/model"
-	"biocad-opcua/web-server/subscriber"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -22,7 +22,7 @@ var upgrader = websocket.Upgrader{
 // related to monitored OPC UA parameters.
 type MeasuresController struct {
 	controller
-	sub    *subscriber.Subscriber
+	sub    *shared.Subscriber
 	bounds map[string]model.Bounds
 }
 
@@ -164,7 +164,7 @@ func (ctl *MeasuresController) SetupRoutes(router *mux.Router) {
 }
 
 // NewMeasuresController returns a new measures controller for the monitored parameters.
-func NewMeasuresController(sub *subscriber.Subscriber, logger *log.Logger, bounds map[string]model.Bounds) *MeasuresController {
+func NewMeasuresController(sub *shared.Subscriber, logger *log.Logger, bounds map[string]model.Bounds) *MeasuresController {
 	ctl := new(MeasuresController)
 	ctl.sub = sub
 	ctl.logger = logger

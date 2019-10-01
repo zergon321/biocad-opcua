@@ -1,4 +1,4 @@
-package subscriber
+package shared
 
 import (
 	"biocad-opcua/opcua-monitor/monitoring"
