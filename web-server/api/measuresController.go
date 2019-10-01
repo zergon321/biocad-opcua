@@ -44,6 +44,7 @@ func (ctl *MeasuresController) measures(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		return
 	}
+	defer conn.Close()
 
 	ctl.logger.Println("Opened a new websocket connection")
 	defer ctl.logger.Println("Websocket connection closed")
