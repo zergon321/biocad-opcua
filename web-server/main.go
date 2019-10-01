@@ -59,10 +59,12 @@ func main() {
 	stream := io.MultiWriter(os.Stdout, file)
 	logger := log.New(stream, PREFIX, log.LstdFlags|log.Lshortfile)
 
-	// Create a subscriber.
+	// Create and launch a subscriber.
 	sub := shared.NewSubscriber(brokerAddress, topic, logger)
 	sub.Connect()
 	defer sub.CloseConnection()
+	sub.Start()
+	defer sub.Stop()
 
 	// Create a data controller.
 	bounds := map[string]data.Bounds{

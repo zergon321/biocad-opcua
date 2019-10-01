@@ -10,12 +10,12 @@ import (
 
 // Subscriber listens for new measures from the message broking service.
 type Subscriber struct {
-	address  string
-	conn     *nats.Conn
-	logger   *log.Logger
-	receiver chan data.Measure
-	topic    string
-	stop     chan interface{}
+	address string
+	conn    *nats.Conn
+	logger  *log.Logger
+	topic   string
+	stop    chan interface{}
+	fanout  *Fanout
 }
 
 // Connect establishes the connection with the message broker.
@@ -30,11 +30,6 @@ func (subscriber *Subscriber) Connect() error {
 	subscriber.conn = conn
 
 	return err
-}
-
-// GetChannel returns a channel to obtain data from the subscriber.
-func (subscriber *Subscriber) GetChannel() <-chan data.Measure {
-	return subscriber.receiver
 }
 
 // Start starts listening for new messages from the topic.
@@ -58,7 +53,7 @@ func (subscriber *Subscriber) Start() {
 				err = json.Unmarshal(message.Data, &measure)
 
 				go func() {
-					subscriber.receiver <- measure
+					subscriber.fanout.SendMeasure(measure)
 				}()
 
 			case <-subscriber.stop:
@@ -66,6 +61,19 @@ func (subscriber *Subscriber) Start() {
 			}
 		}
 	}()
+}
+
+// AddChannelSubscriber adds the given channel to the message broker client's fanout.
+func (subscriber *Subscriber) AddChannelSubscriber(channel chan<- data.Measure) {
+	subscriber.fanout.AddChannel(channel)
+}
+
+// RemoveChannelSubscriber removes the given channel from the message broker client's fanout.
+func (subscriber *Subscriber) RemoveChannelSubscriber(channel chan<- data.Measure) error {
+	err := subscriber.fanout.RemoveChannel(channel)
+	subscriber.handleRemoveSubscriptionError(err)
+
+	return err
 }
 
 // Stop stops listening for incoming messages.
@@ -81,11 +89,11 @@ func (subscriber *Subscriber) CloseConnection() {
 // NewSubscriber create a new subscriber to receive messages from publishers.
 func NewSubscriber(address, topic string, logger *log.Logger) *Subscriber {
 	return &Subscriber{
-		address:  address,
-		topic:    topic,
-		logger:   logger,
-		receiver: make(chan data.Measure),
-		stop:     make(chan interface{}),
+		address: address,
+		topic:   topic,
+		logger:  logger,
+		fanout:  NewFanout(),
+		stop:    make(chan interface{}),
 	}
 }
 
@@ -104,5 +112,11 @@ func (subscriber *Subscriber) handleSubscriptionError(err error) {
 func (subscriber *Subscriber) handleJSONUnmarshalError(err error) {
 	if err != nil {
 		subscriber.logger.Println("Couldn't deserialize JSON:", err)
+	}
+}
+
+func (subscriber *Subscriber) handleRemoveSubscriptionError(err error) {
+	if err != nil {
+		subscriber.logger.Println("Couldn't remove the channel from the fanout", err)
 	}
 }
