@@ -5,12 +5,14 @@ import (
 )
 
 type Cache struct {
+	client   *redis.Client
+	endpoint string
 }
 
 func (cache *Cache) Connect() {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+	cache.client = redis.NewClient(&redis.Options{
+		Addr:     cache.endpoint,
+		Password: "",
+		DB:       0,
 	})
 }
