@@ -16,6 +16,13 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  4096,
 	WriteBufferSize: 4096,
+	CheckOrigin: func(r *http.Request) bool {
+		if r.Header.Get("Origin") == "http://localhost:8080" {
+			return true
+		}
+
+		return false
+	},
 }
 
 // MeasuresController is responsible for handling HTTP requests
