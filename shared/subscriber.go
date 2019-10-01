@@ -52,9 +52,7 @@ func (subscriber *Subscriber) Start() {
 				var measure data.Measure
 				err = json.Unmarshal(message.Data, &measure)
 
-				go func() {
-					subscriber.fanout.SendMeasure(measure)
-				}()
+				subscriber.fanout.SendMeasure(measure)
 
 			case <-subscriber.stop:
 				break

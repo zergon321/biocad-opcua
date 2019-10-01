@@ -166,13 +166,15 @@ func (monitor *OpcuaMonitor) sendMeasureToFanout(message *ua.DataChangeNotificat
 		Parameters: make(map[string]float64),
 	}
 
+	// Get the values of the monitored parameters.
 	for _, item := range message.MonitoredItems {
 		parameter := monitor.parameters[item.ClientHandle]
 		value := item.Value.Value.Value().(float64)
 
 		measure.Parameters[parameter] = value
-		monitor.fanout.SendMeasure(measure)
 	}
+
+	monitor.fanout.SendMeasure(measure)
 }
 
 func (monitor *OpcuaMonitor) handleConnectionError(err error) {
