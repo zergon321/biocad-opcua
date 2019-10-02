@@ -45,12 +45,12 @@ func (alerter *Alerter) GetSubscriptionChannel() chan<- data.Measurement {
 }
 
 // AddChannelSubscriber adds a new channel to the alerter's fanout to listen for new alerts.
-func (alerter *Alerter) AddChannelSubscriber(channel chan data.Measurement) {
+func (alerter *Alerter) AddChannelSubscriber(channel chan<- data.Measurement) {
 	alerter.fanout.AddChannel(channel)
 }
 
 // RemoveChannelSubscriber removes the channel from the fanout.
-func (alerter *Alerter) RemoveChannelSubscriber(channel chan data.Measurement) error {
+func (alerter *Alerter) RemoveChannelSubscriber(channel chan<- data.Measurement) error {
 	err := alerter.fanout.RemoveChannel(channel)
 	alerter.handleRemoveSubscriberError(err)
 
@@ -60,6 +60,17 @@ func (alerter *Alerter) RemoveChannelSubscriber(channel chan data.Measurement) e
 // Stop stops listening for new measurements.
 func (alerter *Alerter) Stop() {
 	alerter.stop <- true
+}
+
+// NewAlerter creates a new alerter to warn about alerting thresholds crossing.
+func NewAlerter(cache *shared.Cache, logger *log.Logger) *Alerter {
+	return &Alerter{
+		cache:  cache,
+		source: make(chan data.Measurement),
+		fanout: shared.NewFanout(),
+		logger: logger,
+		stop:   make(chan interface{}),
+	}
 }
 
 func (alerter *Alerter) checkParametersForAlerts(params data.ParametersState) {

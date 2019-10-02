@@ -25,6 +25,11 @@ func (cache *Cache) Connect() {
 	})
 }
 
+// CloseConnection gracefully closes the connection to the cache.
+func (cache *Cache) CloseConnection() {
+	cache.client.Close()
+}
+
 // GetParameterBounds returns alert thresholds for the parameter.
 func (cache *Cache) GetParameterBounds(parameter string) (data.Bounds, error) {
 	bounds := data.Bounds{}
@@ -90,6 +95,14 @@ func (cache *Cache) SetParameterBounds(parameter string, bounds data.Bounds) err
 	cache.handleSetParameterBoundsError(err)
 
 	return err
+}
+
+// NewCache creates a new cache client.
+func NewCache(endpoint string, logger *log.Logger) *Cache {
+	return &Cache{
+		endpoint: endpoint,
+		logger:   logger,
+	}
 }
 
 func (cache *Cache) handleGetParameterBoundsError(err error) {
