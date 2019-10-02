@@ -1,7 +1,6 @@
 package main
 
 import (
-	"biocad-opcua/data"
 	"biocad-opcua/shared"
 	"biocad-opcua/web-server/api"
 	"flag"
@@ -21,11 +20,13 @@ const (
 )
 
 var (
+	cacheAddress  string
 	brokerAddress string
 	topic         string
 )
 
 func parseFlags() {
+	flag.StringVar(&cacheAddress, "cacheaddress", "", "Address and port of the cache server")
 	flag.StringVar(&brokerAddress, "brokerhost", "", "Address of the message broker")
 	flag.StringVar(&topic, "topic", "measures", "Name of the topic to spread measures across the system")
 
@@ -59,6 +60,11 @@ func main() {
 	stream := io.MultiWriter(os.Stdout, file)
 	logger := log.New(stream, PREFIX, log.LstdFlags|log.Lshortfile)
 
+	// Create a cache client.
+	cache := shared.NewCache(cacheAddress, logger)
+	cache.Connect()
+	defer cache.CloseConnection()
+
 	// Create and launch a subscriber.
 	sub := shared.NewSubscriber(brokerAddress, topic, logger)
 	sub.Connect()
@@ -67,17 +73,7 @@ func main() {
 	defer sub.Stop()
 
 	// Create a data controller.
-	bounds := map[string]data.Bounds{
-		"Temperature": data.Bounds{
-			UpperBound: 100,
-			LowerBound: 0,
-		},
-		"Humidity": data.Bounds{
-			UpperBound: 86,
-			LowerBound: 16,
-		},
-	}
-	measuresController := api.NewMeasuresController(sub, logger, bounds)
+	measuresController := api.NewMeasuresController(sub, logger, cache)
 
 	// Assign routing paths.
 	router := mux.NewRouter()

@@ -32,8 +32,8 @@ var upgrader = websocket.Upgrader{
 // related to monitored OPC UA parameters.
 type MeasuresController struct {
 	controller
-	sub    *shared.Subscriber
-	bounds map[string]data.Bounds
+	sub   *shared.Subscriber
+	cache *shared.Cache
 }
 
 // measures is a Websocket handler to send monitoring data to the web client.
@@ -74,10 +74,13 @@ func (ctl *MeasuresController) measures(w http.ResponseWriter, r *http.Request) 
 
 // getAllParameters sends a list of the monitored parameters to the client.
 func (ctl *MeasuresController) getAllParameters(w http.ResponseWriter, r *http.Request) {
-	var parameters []string
+	parameters, err := ctl.cache.GetAllParameters()
 
-	for parameter := range ctl.bounds {
-		parameters = append(parameters, parameter)
+	if err != nil {
+		ctl.handleInternalError("Couldn't obtain a list of the parameters", err)
+		ctl.handleWebError(w, http.StatusInternalServerError, "Couldn't read the parameters from the cache")
+
+		return
 	}
 
 	data, err := json.MarshalIndent(parameters, "", "    ")
@@ -104,7 +107,15 @@ func (ctl *MeasuresController) getBoundsForParameter(w http.ResponseWriter, r *h
 		return
 	}
 
-	bounds, ok := ctl.bounds[parameter]
+	bounds, err := ctl.cache.GetParameterBounds(parameter)
+
+	if err != nil {
+		ctl.handleInternalError("Couldn't get bounds for the parameter", err)
+		ctl.handleWebError(w, http.StatusInternalServerError,
+			"Couldn't obtain parameter bounds from the cache")
+
+		return
+	}
 
 	if !ok {
 		ctl.handleWebError(w, http.StatusNotFound,
@@ -137,7 +148,7 @@ func (ctl *MeasuresController) changeBoundsForParameter(w http.ResponseWriter, r
 		return
 	}
 
-	if _, ok := ctl.bounds[parameter]; !ok {
+	if _, err := ctl.cache.GetParameterBounds(parameter); err != nil {
 		ctl.handleWebError(w, http.StatusNotFound,
 			fmt.Sprintf("Parameter '%s' is not monitored on the server", parameter))
 
@@ -170,7 +181,15 @@ func (ctl *MeasuresController) changeBoundsForParameter(w http.ResponseWriter, r
 		return
 	}
 
-	ctl.bounds[parameter] = bounds
+	err = ctl.cache.SetParameterBounds(parameter, bounds)
+
+	if err != nil {
+		ctl.handleInternalError("Couldn't set bounds for the parameter", err)
+		ctl.handleWebError(w, http.StatusInternalServerError,
+			"Couldn't set bounds for the parameter in the cache")
+
+		return
+	}
 }
 
 // SetupRoutes sets up HTTP routes for the controller.
@@ -184,11 +203,11 @@ func (ctl *MeasuresController) SetupRoutes(router *mux.Router) {
 }
 
 // NewMeasuresController returns a new measures controller for the monitored parameters.
-func NewMeasuresController(sub *shared.Subscriber, logger *log.Logger, bounds map[string]data.Bounds) *MeasuresController {
+func NewMeasuresController(sub *shared.Subscriber, logger *log.Logger, cache *shared.Cache) *MeasuresController {
 	ctl := new(MeasuresController)
 	ctl.sub = sub
 	ctl.logger = logger
-	ctl.bounds = bounds
+	ctl.cache = cache
 
 	return ctl
 }
