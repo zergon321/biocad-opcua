@@ -30,6 +30,18 @@ func (cache *Cache) CloseConnection() {
 	cache.client.Close()
 }
 
+// GetAllParameters returns a list of the all parameters from the cache.
+func (cache *Cache) GetAllParameters() ([]string, error) {
+	parameters, err := cache.client.SMembers("parameters").Result()
+	cache.handleGetAllParametersError(err)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return parameters, nil
+}
+
 // GetParameterBounds returns alert thresholds for the parameter.
 func (cache *Cache) GetParameterBounds(parameter string) (data.Bounds, error) {
 	bounds := data.Bounds{}
@@ -94,6 +106,13 @@ func (cache *Cache) SetParameterBounds(parameter string, bounds data.Bounds) err
 	err := cache.client.HMSet(parameter, fields).Err()
 	cache.handleSetParameterBoundsError(err)
 
+	if err != nil {
+		return err
+	}
+
+	err = cache.client.SAdd("parameters", parameter).Err()
+	cache.handleAddParameterError(err)
+
 	return err
 }
 
@@ -120,5 +139,17 @@ func (cache *Cache) handleParameterValueCastError(err error) {
 func (cache *Cache) handleSetParameterBoundsError(err error) {
 	if err != nil {
 		cache.logger.Println("Couldn't set parameter bounds in the cache:", err)
+	}
+}
+
+func (cache *Cache) handleGetAllParametersError(err error) {
+	if err != nil {
+		cache.logger.Println("Couldn't obtain a list of parameters from the cache", err)
+	}
+}
+
+func (cache *Cache) handleAddParameterError(err error) {
+	if err != nil {
+		cache.logger.Println("Couldn't add the parameter to the cache", err)
 	}
 }
