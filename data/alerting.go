@@ -40,3 +40,11 @@ func (alert Alert) ToDataPoint() (*influxdb.Point, error) {
 
 	return point, nil
 }
+
+// DefaultBounds returns default bounds for initial assignation to any parameter.
+func DefaultBounds() Bounds {
+	return Bounds{
+		LowerBound: -1,
+		UpperBound: 1,
+	}
+}

@@ -100,7 +100,7 @@ func (monitor *OpcuaMonitor) MonitorParameter(nodeID string) error {
 	synchronizer.Lock()
 	defer synchronizer.Unlock()
 
-	// Get parameter name.
+	// Get the parameter name.
 	tokens := strings.Split(nodeID, ";")
 	tokens = strings.Split(tokens[1], "=")
 	parameter := tokens[1]

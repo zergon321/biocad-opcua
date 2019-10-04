@@ -12,6 +12,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	_ "github.com/influxdata/influxdb1-client"
@@ -28,6 +29,7 @@ var (
 	parametersPath string
 	dbAddress      string
 	database       string
+	cacheAddress   string
 	brokerAddress  string
 	topic          string
 	capacity       int
@@ -40,6 +42,7 @@ func parseFlags() {
 	flag.StringVar(&dbAddress, "dbaddress", "http://localhost:8086",
 		"Addres of the database server")
 	flag.StringVar(&database, "database", "system_indicators", "Name of the database to store data")
+	flag.StringVar(&cacheAddress, "cacheaddress", "", "Address and port of the cache server")
 	flag.StringVar(&brokerAddress, "brokerhost", "", "Address of the message broker")
 	flag.StringVar(&topic, "topic", "measures", "Name of the topic to spread measures across the system")
 	flag.IntVar(&capacity, "capacity", 60, "Number of points per measurment series")
@@ -83,6 +86,11 @@ func main() {
 	defer monitor.CloseConnection()
 	handleError(logger, "Couldn't connect to the server", err)
 
+	// Create a cache client to store the alerting thresholds for the parameters.
+	cache := shared.NewCache(cacheAddress, logger)
+	cache.Connect()
+	defer cache.CloseConnection()
+
 	// Create a database client and connect to the database.
 	dbclient := shared.NewDbClient(dbAddress, database, logger, capacity)
 	dbclient.Connect()
@@ -97,7 +105,23 @@ func main() {
 	parameters, err := monitoring.LoadParametersFromFile(parametersPath)
 	handleError(logger, "Couldn't open file with parameters", err)
 
+	// Monitor all the parameters from the file.
 	for _, parameter := range parameters {
+		// Get the parameter name.
+		tokens := strings.Split(parameter, ";")
+		tokens = strings.Split(tokens[1], "=")
+		name := tokens[1]
+
+		// Check if the parameter exists in the cache.
+		exists, err := cache.CheckParameterExists(name)
+		handleError(logger, "Couldn't check the parameter for existence", err)
+
+		// If the parameter doesn't exist in the cache, set its bounds to default.
+		if !exists {
+			err = cache.SetParameterBounds(name, data.DefaultBounds())
+			handleError(logger, "Couldn't set the default bounds for the parameter", err)
+		}
+
 		err = monitor.MonitorParameter(parameter)
 		handleError(logger, "Couldn't send parameter to monitoring", err)
 	}

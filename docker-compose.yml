@@ -21,6 +21,7 @@ services:
       - --params=parameters.txt
       - --dbaddress=http://influxdb:8086
       - --database=system_indicators
+      - --cacheaddress=redis:6380
       - --brokerhost=nats://nats:4222
       - --topic=measures
       - --capacity=5

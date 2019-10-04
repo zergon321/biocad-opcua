@@ -20,14 +20,30 @@ type Cache struct {
 func (cache *Cache) Connect() {
 	cache.client = redis.NewClient(&redis.Options{
 		Addr:     cache.endpoint,
-		Password: "",
-		DB:       0,
+		Password: "", // No password.
+		DB:       0,  // Default database.
 	})
 }
 
 // CloseConnection gracefully closes the connection to the cache.
 func (cache *Cache) CloseConnection() {
 	cache.client.Close()
+}
+
+// CheckParameterExists checks if the parameter exists in teh cache.
+func (cache *Cache) CheckParameterExists(parameter string) (bool, error) {
+	result, err := cache.client.Exists(parameter).Result()
+	cache.handleCheckParameterExistsError(err)
+
+	if err != nil {
+		return false, err
+	}
+
+	if result > 0 {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // GetAllParameters returns a list of the all parameters from the cache.
@@ -151,5 +167,11 @@ func (cache *Cache) handleGetAllParametersError(err error) {
 func (cache *Cache) handleAddParameterError(err error) {
 	if err != nil {
 		cache.logger.Println("Couldn't add the parameter to the cache", err)
+	}
+}
+
+func (cache *Cache) handleCheckParameterExistsError(err error) {
+	if err != nil {
+		cache.logger.Println("Couldn't check if the parameter exists in the cache", err)
 	}
 }
