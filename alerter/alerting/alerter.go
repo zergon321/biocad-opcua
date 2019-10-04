@@ -90,7 +90,7 @@ func (alerter *Alerter) checkParametersForAlerts(params data.ParametersState) {
 				Timestamp: params.Timestamp,
 			}
 
-			alerter.logger.Printf("Alert: Time: %v\nParameter: %s\nLower bound: %f\n"+
+			alerter.logger.Printf("Alert occured:\nTime: %v\nParameter: %s\nLower bound: %f\n"+
 				"Upper bound: %f\nValue: %f\n", alert.Timestamp, alert.Parameter, alert.LowerBound,
 				alert.UpperBound, alert.Value)
 
