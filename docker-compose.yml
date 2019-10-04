@@ -6,6 +6,7 @@ services:
     depends_on:
       - influxdb
       - nats
+      - redis
     build:
       context: .
       dockerfile: ./opcua-monitor/Dockerfile
@@ -27,17 +28,31 @@ services:
     depends_on:
       - influxdb
       - redis
+      - nats
+      - opcua-monitor
     build:
       context: .
       dockerfile: ./alerter/Dockerfile
     image: alerter
+    volumes:
+      - type: volume
+        source: alerter-logs
+        target: /var/log/alerter/sys.log
     container_name: alert_server
+    command:
+      - --cacheaddress=redis:6380
+      - --dbaddress=http://influxdb:8086
+      - --database=system_indicators
+      - --brokerhost=nats://nats:4222
+      - --topic=measures
+      - --capacity=5
 
   web-server:
     depends_on:
       - opcua-monitor
       - influxdb
       - nats
+      - redis
     build:
       context: .
       dockerfile: ./web-server/Dockerfile
@@ -50,6 +65,7 @@ services:
         target: /var/log/web
     container_name: web_server
     command:
+      - --cacheaddress=redis:6380
       - --brokerhost=nats://nats:4222
       - --topic=measures
 
@@ -110,5 +126,6 @@ volumes:
   redis-data:
   web-logs:
   opcua-logs:
+  alerter-logs:
   influxdb-data:
   chronograf-data:
