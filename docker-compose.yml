@@ -93,10 +93,11 @@ services:
         target: /var/log/redis
       - type: volume
         source: redis-data
-        target: /var/lib/redis
+        target: /data
     container_name: redis_server
     command:
       - --port 6380
+      - --appendonly yes
 
   influxdb:
     image: influxdb:1.7.8-alpine
