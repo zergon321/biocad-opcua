@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -73,7 +74,7 @@ func (monitor *OpcuaMonitor) CloseConnection() {
 
 // MonitorParameter makes the monitor receive updates
 // of the specified parameter from the server.
-func (monitor *OpcuaMonitor) MonitorParameter(parameter string) error {
+func (monitor *OpcuaMonitor) MonitorParameter(nodeID string) error {
 	// If not subscribed yet.
 	if monitor.subscription == nil {
 		subscription, err := monitor.connection.Subscribe(&opcua.SubscriptionParameters{
@@ -89,7 +90,7 @@ func (monitor *OpcuaMonitor) MonitorParameter(parameter string) error {
 	}
 
 	// Parse NodeID.
-	id, err := ua.ParseNodeID(parameter)
+	id, err := ua.ParseNodeID(nodeID)
 	monitor.handleSubscriptionError(err)
 
 	if err != nil {
@@ -98,6 +99,11 @@ func (monitor *OpcuaMonitor) MonitorParameter(parameter string) error {
 
 	synchronizer.Lock()
 	defer synchronizer.Unlock()
+
+	// Get parameter name.
+	tokens := strings.Split(nodeID, ";")
+	tokens = strings.Split(tokens[1], "=")
+	parameter := tokens[1]
 
 	// Subscribe to the parameter.
 	request := opcua.NewMonitoredItemCreateRequestWithDefaults(id,
