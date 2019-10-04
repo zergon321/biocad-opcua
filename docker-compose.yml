@@ -37,7 +37,7 @@ services:
     volumes:
       - type: volume
         source: alerter-logs
-        target: /var/log/alerter/sys.log
+        target: /var/log/alerter
     container_name: alert_server
     command:
       - --cacheaddress=redis:6380
