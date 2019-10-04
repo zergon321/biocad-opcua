@@ -119,6 +119,7 @@ func (cache *Cache) SetParameterBounds(parameter string, bounds data.Bounds) err
 		"upper_bound": bounds.UpperBound,
 	}
 
+	// Change the bounds for the parameter.
 	err := cache.client.HMSet(parameter, fields).Err()
 	cache.handleSetParameterBoundsError(err)
 
@@ -126,8 +127,17 @@ func (cache *Cache) SetParameterBounds(parameter string, bounds data.Bounds) err
 		return err
 	}
 
+	// If the parameter doesn't exist, add it to the set.
 	err = cache.client.SAdd("parameters", parameter).Err()
 	cache.handleAddParameterError(err)
+
+	if err != nil {
+		return err
+	}
+
+	// Save the current state in the background.
+	err = cache.client.BgSave().Err()
+	cache.handleSnapshotSaveError(err)
 
 	return err
 }
@@ -173,5 +183,11 @@ func (cache *Cache) handleAddParameterError(err error) {
 func (cache *Cache) handleCheckParameterExistsError(err error) {
 	if err != nil {
 		cache.logger.Println("Couldn't check if the parameter exists in the cache", err)
+	}
+}
+
+func (cache *Cache) handleSnapshotSaveError(err error) {
+	if err != nil {
+		cache.logger.Println("Couldn't save the cache snapshot to the disk", err)
 	}
 }
