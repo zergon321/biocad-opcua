@@ -131,14 +131,6 @@ func (cache *Cache) SetParameterBounds(parameter string, bounds data.Bounds) err
 	err = cache.client.SAdd("parameters", parameter).Err()
 	cache.handleAddParameterError(err)
 
-	if err != nil {
-		return err
-	}
-
-	// Save the current state in the background.
-	err = cache.client.BgSave().Err()
-	cache.handleSnapshotSaveError(err)
-
 	return err
 }
 
