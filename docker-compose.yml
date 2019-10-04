@@ -18,6 +18,7 @@ services:
     container_name: opcua_monitor
     command:
       - --endpoint=opc.tcp://192.168.0.103:53530/OPCUA/SimulationServer
+      - --params=parameters.txt
       - --dbaddress=http://influxdb:8086
       - --database=system_indicators
       - --brokerhost=nats://nats:4222

@@ -1,0 +1,2 @@
+ns=3;s=Temperature
+ns=3;s=Humidity

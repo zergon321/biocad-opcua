@@ -5,4 +5,5 @@ ENTRYPOINT [ "/go/bin/opcua-monitor" ]
 
 FROM alpine:latest
 COPY --from=builder /go/bin/opcua-monitor /bin/opcua-monitor
+COPY ./opcua-monitor/debug/parameters.txt /bin/parameters.txt
 ENTRYPOINT [ "/bin/opcua-monitor" ]
