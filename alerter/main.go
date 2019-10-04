@@ -13,8 +13,8 @@ import (
 
 // Application configuration constants.
 const (
-	PREFIX = "web-server: "
-	LOG    = "/var/log/web/sys.log"
+	PREFIX = "alerter: "
+	LOG    = "/var/log/alerter/sys.log"
 )
 
 var (
