@@ -77,6 +77,9 @@ func main() {
 	defer cancel()
 	interval := 1 * time.Second
 	monitor := monitoring.NewOpcuaMonitor(ctx, endpoint, logger, interval)
+	err = monitor.Connect()
+	defer monitor.CloseConnection()
+	handleError(logger, "Couldn't connect to the server", err)
 
 	// Create a database client and connect to the database.
 	dbclient := shared.NewDbClient(dbAddress, database, logger, capacity)
@@ -87,13 +90,6 @@ func main() {
 	pb := shared.NewPublisher(brokerAddress, topic, logger)
 	pb.Connect()
 	defer pb.CloseConnection()
-
-	// Start the monitor.
-	err = monitor.Connect()
-	defer monitor.CloseConnection()
-	handleError(logger, "Couldn't connect to the server", err)
-	monitor.Start()
-	defer monitor.Stop()
 
 	// Monitor certain parameters.
 	monitor.MonitorParameter(data.Humidity)
@@ -131,6 +127,10 @@ func main() {
 	monitor.AddSubscriber(channel)
 	pb.Start()
 	defer pb.Stop()
+
+	// Start the monitor.
+	monitor.Start()
+	defer monitor.Stop()
 
 	time.Sleep(20 * time.Second)
 }

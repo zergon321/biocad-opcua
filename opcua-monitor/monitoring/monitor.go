@@ -74,6 +74,21 @@ func (monitor *OpcuaMonitor) CloseConnection() {
 // MonitorParameter makes the monitor receive updates
 // of the specified parameter from the server.
 func (monitor *OpcuaMonitor) MonitorParameter(parameter string) error {
+	// If not subscribed yet.
+	if monitor.subscription == nil {
+		subscription, err := monitor.connection.Subscribe(&opcua.SubscriptionParameters{
+			Interval: monitor.interval,
+		})
+		monitor.handleConnectionError(err)
+
+		if err != nil {
+			return err
+		}
+
+		monitor.subscription = subscription
+	}
+
+	// Parse NodeID.
 	id, err := ua.ParseNodeID("ns=3;s=" + parameter)
 	monitor.handleSubscriptionError(err)
 
@@ -84,6 +99,7 @@ func (monitor *OpcuaMonitor) MonitorParameter(parameter string) error {
 	synchronizer.Lock()
 	defer synchronizer.Unlock()
 
+	// Subscribe to the parameter.
 	request := opcua.NewMonitoredItemCreateRequestWithDefaults(id,
 		ua.AttributeIDValue, monitor.handleCounter)
 	res, err := monitor.subscription.Monitor(ua.TimestampsToReturnBoth, request)
