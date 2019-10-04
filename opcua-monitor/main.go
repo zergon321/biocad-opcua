@@ -24,17 +24,19 @@ const (
 )
 
 var (
-	endpoint      string
-	dbAddress     string
-	database      string
-	brokerAddress string
-	topic         string
-	capacity      int
+	endpoint       string
+	parametersPath string
+	dbAddress      string
+	database       string
+	brokerAddress  string
+	topic          string
+	capacity       int
 )
 
 func parseFlags() {
 	flag.StringVar(&endpoint, "endpoint", "opc.tcp://localhost:53530/OPCUA/SimulationServer",
 		"Address of the OPC UA server")
+	flag.StringVar(&parametersPath, "params", "", "File containing OPC UA NodeIDs of the parameters")
 	flag.StringVar(&dbAddress, "dbaddress", "http://localhost:8086",
 		"Addres of the database server")
 	flag.StringVar(&database, "database", "system_indicators", "Name of the database to store data")
@@ -91,9 +93,14 @@ func main() {
 	pb.Connect()
 	defer pb.CloseConnection()
 
-	// Monitor certain parameters.
-	monitor.MonitorParameter(data.Humidity)
-	monitor.MonitorParameter(data.Temperature)
+	// Load parameters (NodeIDs) from the file and monitor them.
+	parameters, err := monitoring.LoadParametersFromFile(parametersPath)
+	handleError(logger, "Couldn't open file with parameters", err)
+
+	for _, parameter := range parameters {
+		err = monitor.MonitorParameter(parameter)
+		handleError(logger, "Couldn't send parameter to monitoring", err)
+	}
 
 	// Console subscriber.
 	go func() {

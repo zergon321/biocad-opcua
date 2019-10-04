@@ -89,7 +89,7 @@ func (monitor *OpcuaMonitor) MonitorParameter(parameter string) error {
 	}
 
 	// Parse NodeID.
-	id, err := ua.ParseNodeID("ns=3;s=" + parameter)
+	id, err := ua.ParseNodeID(parameter)
 	monitor.handleSubscriptionError(err)
 
 	if err != nil {
