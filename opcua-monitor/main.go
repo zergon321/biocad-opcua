@@ -79,8 +79,7 @@ func main() {
 	logger := log.New(stream, PREFIX, log.LstdFlags|log.Lshortfile)
 
 	// Create a monitor.
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	ctx := context.Background()
 	interval := 1 * time.Second
 	monitor := monitoring.NewOpcuaMonitor(ctx, endpoint, logger, interval)
 	err = monitor.Connect()
