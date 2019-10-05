@@ -163,7 +163,12 @@ func main() {
 	monitor.Start()
 	defer monitor.Stop()
 
-	time.Sleep(20 * time.Second)
+	// Interrupt.
+	interrupt := make(chan os.Signal)
+	signal.Notify(interrupt, os.Kill, os.Interrupt)
+
+	<-interrupt
+	logger.Println("Alerter stopped.")
 }
 
 func handleError(logger *log.Logger, message string, err error) {
