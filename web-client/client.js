@@ -104,6 +104,16 @@ function editBound() {
     var d = document.getElementById("parameters").value;
     var a = document.getElementById("UpperBound").value;
     var b = document.getElementById("LowerBound").value;
+    if (a.indexOf(',') > -1)
+    {
+        a = a.split(',').join('.');
+        document.getElementById("UpperBound").value = a;
+    }
+    if (b.indexOf(',') > -1)
+    {
+        b = b.split(',').join('.');
+        document.getElementById("LowerBound").value = b;
+    }
     setBound(params[d],a,b);
 }
 
