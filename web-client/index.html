@@ -2,11 +2,19 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Parameters</title>
+        <title>Parameters?</title>
+        <script src="client.js" defer></script>
+        <script src="canvasjs.min.js" defer></script>
     </head>
     <body>
-        <script src="client.js" defer></script>
-
+        <select onchange="selectedParameter()" id="parameters">
+        </select>
+        <div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>
+        <div>Верхняя граница</div>
+        <input type="text" id="UpperBound" size="30">
+        <div>Нижняя граница</div>
+        <input type="text" id="LowerBound" size="30">
+        <input type="button" id="edit" onclick="editBound()" value="Изменить">
         <div id="data-field"></div>
     </body>
 </html>
