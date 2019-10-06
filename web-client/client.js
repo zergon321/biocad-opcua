@@ -107,7 +107,7 @@ function editBound() {
     if (a.indexOf(',') > -1)
     {
         a = a.split(',').join('.');
-        document.getElementById("UpperBound").value = a;
+        document.getElementById("UpperBound").value = a; 
     }
     if (b.indexOf(',') > -1)
     {
