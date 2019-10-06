@@ -1,4 +1,4 @@
-var socket = new WebSocket("ws://127.0.0.1:8080/api/measures");
+var socket = new WebSocket("ws://" + window.location.host + "/api/measures");
 var output = document.getElementById("data-field");
 let params = [];
 let values = [];
@@ -52,7 +52,7 @@ socket.onerror = function(error) {
 function loadParametrs() {
     var myParams, i;
     var x = new XMLHttpRequest();
-    x.open("GET", "http://localhost:8080/api/parameters", true);
+    x.open("GET", "http://" + window.location.host + "/api/parameters", true);
     x.onload = function ()
     {
         var j=0;
@@ -75,7 +75,7 @@ function loadParametrs() {
 function loadBound(myParams) {
     var myBound;
     var y = new XMLHttpRequest();
-    y.open("GET", "http://localhost:8080/api/"+myParams+"/bounds", true);
+    y.open("GET", "http://" + window.location.host + "/api/" + myParams + "/bounds", true);
     y.onload = function ()
     {
         myBound=  JSON.parse(y.responseText);
@@ -117,9 +117,9 @@ function editBound() {
     setBound(params[d],a,b);
 }
 
-function setBound(myParams,a,b) {
+function setBound(myParams, a, b) {
     var z = new XMLHttpRequest();
-    z.open("PATCH", "http://localhost:8080/api/"+myParams+"/bounds", true);
+    z.open("PATCH", "http://" + window.location.host + "/api/" + myParams + "/bounds", true);
     z.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     z.send('{"LowerBound": ' + b + ',"UpperBound": ' + a + '}');
     z.onerror = function()

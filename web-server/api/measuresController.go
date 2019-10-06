@@ -20,7 +20,8 @@ var upgrader = websocket.Upgrader{
 		origin := r.Header.Get("Origin")
 
 		if origin == "http://localhost:8080" ||
-			origin == "http://127.0.0.1:8080" {
+			origin == "http://127.0.0.1:8080" ||
+			origin == "http://192.168.0.103:8080" {
 			return true
 		}
 
