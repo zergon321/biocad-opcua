@@ -195,6 +195,7 @@ func (ctl *MeasuresController) changeBoundsForParameter(w http.ResponseWriter, r
 // SetupRoutes sets up HTTP routes for the controller.
 func (ctl *MeasuresController) SetupRoutes(router *mux.Router) {
 	router.Use(jsonMiddleware)
+	router.Use(loggingMiddleware(ctl.logger))
 
 	router.HandleFunc("/measures", ctl.measures)
 	router.HandleFunc("/{parameter:[A-Z][a-z]+}/bounds", ctl.changeBoundsForParameter).Methods("PATCH")
