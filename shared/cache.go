@@ -30,7 +30,7 @@ func (cache *Cache) CloseConnection() {
 	cache.client.Close()
 }
 
-// CheckParameterExists checks if the parameter exists in teh cache.
+// CheckParameterExists checks if the parameter exists in the cache.
 func (cache *Cache) CheckParameterExists(parameter string) (bool, error) {
 	result, err := cache.client.Exists(parameter).Result()
 	cache.handleCheckParameterExistsError(err)
@@ -44,6 +44,21 @@ func (cache *Cache) CheckParameterExists(parameter string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+// AddParameters adds new parameter names to the cache.
+func (cache *Cache) AddParameters(parameters ...string) error {
+	values := make([]interface{}, len(parameters))
+
+	for i := range parameters {
+		values[i] = parameters[i]
+	}
+
+	// If the parameter doesn't exist, add it to the set.
+	err := cache.client.SAdd("parameters", values...).Err()
+	cache.handleAddParameterError(err)
+
+	return err
 }
 
 // GetAllParameters returns a list of the all parameters from the cache.
@@ -128,10 +143,7 @@ func (cache *Cache) SetParameterBounds(parameter string, bounds data.Bounds) err
 	}
 
 	// If the parameter doesn't exist, add it to the set.
-	err = cache.client.SAdd("parameters", parameter).Err()
-	cache.handleAddParameterError(err)
-
-	return err
+	return cache.AddParameters(parameter)
 }
 
 // NewCache creates a new cache client.

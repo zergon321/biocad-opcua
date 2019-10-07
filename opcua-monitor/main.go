@@ -118,8 +118,8 @@ func main() {
 
 		// If the parameter doesn't exist in the cache, set its bounds to default.
 		if !exists {
-			err = cache.SetParameterBounds(name, data.DefaultBounds())
-			handleError(logger, "Couldn't set the default bounds for the parameter", err)
+			err = cache.AddParameters(name)
+			handleError(logger, "Couldn't add the parameter name in the cache", err)
 		}
 
 		err = monitor.MonitorParameter(parameter)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"biocad-opcua/alerter/alerting"
+	"biocad-opcua/data"
 	"biocad-opcua/shared"
 	"flag"
 	"io"
@@ -88,6 +89,20 @@ func main() {
 	subscriber.Connect()
 	defer subscriber.CloseConnection()
 
+	// Check for new parameters and set the default bounds for them.
+	parameters, err := cache.GetAllParameters()
+	handleError(logger, "Couldn't get a list of parameters from the cache", err)
+
+	for _, parameter := range parameters {
+		exists, err := cache.CheckParameterExists(parameter)
+		handleError(logger, "Couldn't check if the parameter exists in the cache", err)
+
+		if !exists {
+			err = cache.SetParameterBounds(parameter, data.DefaultBounds())
+			handleError(logger, "Couldn't set the default bounds for the parameter", err)
+		}
+	}
+
 	// Channel subscriptions.
 	alerter.AddChannelSubscriber(dbChannel)
 	alerter.Start()
@@ -103,4 +118,10 @@ func main() {
 
 	<-interrupt
 	logger.Println("Alerter stopped.")
+}
+
+func handleError(logger *log.Logger, message string, err error) {
+	if err != nil {
+		logger.Fatalf("%s: %s", message, err)
+	}
 }
