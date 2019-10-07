@@ -94,7 +94,7 @@ func main() {
 	handleError(logger, "Couldn't get a list of parameters from the cache", err)
 
 	for _, parameter := range parameters {
-		exists, err := cache.CheckParameterExists(parameter)
+		exists, err := cache.CheckParameterBoundsExist(parameter)
 		handleError(logger, "Couldn't check if the parameter exists in the cache", err)
 
 		if !exists {

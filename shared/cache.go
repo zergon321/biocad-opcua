@@ -30,16 +30,32 @@ func (cache *Cache) CloseConnection() {
 	cache.client.Close()
 }
 
-// CheckParameterExists checks if the parameter exists in the cache.
-func (cache *Cache) CheckParameterExists(parameter string) (bool, error) {
+// CheckParameterBoundsExist checks if the parameter bounds exist in the cache.
+func (cache *Cache) CheckParameterBoundsExist(parameter string) (bool, error) {
 	result, err := cache.client.Exists(parameter).Result()
-	cache.handleCheckParameterExistsError(err)
+	cache.handleCheckParameterBoundsExistError(err)
 
 	if err != nil {
 		return false, err
 	}
 
 	if result > 0 {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+// CheckParameterExists checks if the parameter exists in the cache.
+func (cache *Cache) CheckParameterExists(parameter string) (bool, error) {
+	exists, err := cache.client.SIsMember("parameters", parameter).Result()
+	cache.handleCheckParameterExistsError(err)
+
+	if err != nil {
+		return false, err
+	}
+
+	if exists {
 		return true, nil
 	}
 
@@ -187,6 +203,12 @@ func (cache *Cache) handleAddParameterError(err error) {
 func (cache *Cache) handleCheckParameterExistsError(err error) {
 	if err != nil {
 		cache.logger.Println("Couldn't check if the parameter exists in the cache", err)
+	}
+}
+
+func (cache *Cache) handleCheckParameterBoundsExistError(err error) {
+	if err != nil {
+		cache.logger.Println("Couldn't check if the parameter bounds exist in the cache", err)
 	}
 }
 
