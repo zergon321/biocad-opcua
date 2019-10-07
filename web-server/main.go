@@ -67,7 +67,8 @@ func main() {
 
 	// Create and launch a subscriber.
 	sub := shared.NewSubscriber(brokerAddress, topic, logger)
-	sub.Connect()
+	err = sub.Connect()
+	handleError(logger, "Couldn't connect to the message broker", err)
 	defer sub.CloseConnection()
 	sub.Start()
 	defer sub.Stop()
@@ -84,4 +85,10 @@ func main() {
 
 	router.PathPrefix("/").Handler(wwwroot)
 	http.ListenAndServe(":8080", router)
+}
+
+func handleError(logger *log.Logger, message string, err error) {
+	if err != nil {
+		logger.Fatalf("%s: %s", message, err)
+	}
 }

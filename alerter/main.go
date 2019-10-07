@@ -73,7 +73,8 @@ func main() {
 
 	// Create a time-series database client.
 	dbclient := shared.NewDbClient(dbAddress, database, logger, capacity)
-	dbclient.Connect()
+	err = dbclient.Connect()
+	handleError(logger, "Couldn't connect to the database", err)
 	defer dbclient.CloseConnection()
 	dbclient.Start()
 	dbChannel := dbclient.GetSubscriptionChannel()
@@ -86,7 +87,8 @@ func main() {
 
 	// Create a message broker subscriber.
 	subscriber := shared.NewSubscriber(brokerAddress, topic, logger)
-	subscriber.Connect()
+	err = subscriber.Connect()
+	handleError(logger, "Couldn't connect to the message broker", err)
 	defer subscriber.CloseConnection()
 
 	// Check for new parameters and set the default bounds for them.

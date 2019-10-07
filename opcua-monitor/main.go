@@ -93,12 +93,14 @@ func main() {
 
 	// Create a database client and connect to the database.
 	dbclient := shared.NewDbClient(dbAddress, database, logger, capacity)
-	dbclient.Connect()
+	err = dbclient.Connect()
+	handleError(logger, "Couldn't connect to the database", err)
 	defer dbclient.CloseConnection()
 
 	// Create a publisher to spread measures across the application.
 	pb := shared.NewPublisher(brokerAddress, topic, logger)
-	pb.Connect()
+	err = pb.Connect()
+	handleError(logger, "Couldn't connect to the message broker", err)
 	defer pb.CloseConnection()
 
 	// Load parameters (NodeIDs) from the file and monitor them.
