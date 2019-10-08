@@ -5,16 +5,23 @@
         <title>Parameters?</title>
         <script src="client.js" defer></script>
         <script src="canvasjs.min.js" defer></script>
+        <link href="newcss.css" rel="stylesheet" type="text/css"/>
     </head>
     <body>
+       <center>
         <select onchange="selectedParameter()" id="parameters">
-        </select>
-        <div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>
-        <div>Верхняя граница</div>
-        <input type="text" id="UpperBound" size="30">
-        <div>Нижняя граница</div>
-        <input type="text" id="LowerBound" size="30">
+            </select>
+        </center> 
+        <div id="chartContainer">   </div>
+
+        <div class="cover">
+        <div class="bound"><p>Верхняя граница</p>
+        <input type="text" id="UpperBound" size="30"></div>
+        <div class="bound"><p>Нижняя граница</p>
+        <input type="text" id="LowerBound" size="30"></div>
         <input type="button" id="edit" onclick="editBound()" value="Изменить">
+        </div>
+
         <div id="data-field"></div> 
     </body>
 </html>

@@ -135,7 +135,8 @@ function setBound(myParams, a, b) {
 
 function Chart() {
     var chart = new CanvasJS.Chart("chartContainer", {
-	exportEnabled: true,
+    exportEnabled: true,
+    theme: "dark1",
 	title :{
 		text: values[selectParameter][0]
 	},
@@ -144,7 +145,7 @@ function Chart() {
 		stripLines: [{
 			value:UpperBound,
             label: "",
-            labelFontColor: "#FF0000"//цвет для верхней границы
+            color: "#b30000"//цвет для верхней границы
 		}]
     },
     axisY2: {
@@ -152,7 +153,7 @@ function Chart() {
 		stripLines: [{
 			value:LowerBound,
             label: "",
-            labelFontColor: "#FF0000"//цвет для нижней границы
+            color: "#b30000"//цвет для нижней границы
 		}]
     },
     axisX:{     
@@ -161,7 +162,7 @@ function Chart() {
 	data: [{
         name: "Type 1 Filter",
         type: "line",
-        color: "#000FFF",//цвет для линий должен быть одинаковым
+        color: "#21CBD1",//цвет для линий должен быть одинаковым
 		markerSize: 0,
 		dataPoints: values[selectParameter][1] 
     },
@@ -169,7 +170,7 @@ function Chart() {
         name: "",
         type: "line",
         markerSize: 0,
-        color: "#000FFF",//цвет для линий должен быть одинаковым
+        color: "#21CBD1",//цвет для линий должен быть одинаковым
         showInLegend: false,
         axisYType: "secondary",
 		dataPoints: values[selectParameter][1] 
