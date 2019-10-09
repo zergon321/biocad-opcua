@@ -1,3 +1,10 @@
 ns=3;s=Temperature
 ns=3;s=Humidity
 ns=3;s=Density
+ns=3;s=Amperage
+ns=3;s=Frequency
+ns=3;s=Pressure
+ns=3;s=Resistance
+ns=3;s=Voltage
+ns=3;s=Volume
+ns=3;s=Wavelength
