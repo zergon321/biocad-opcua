@@ -2,6 +2,7 @@ package shared
 
 import (
 	"biocad-opcua/data"
+	"fmt"
 	"log"
 
 	influxdb "github.com/influxdata/influxdb1-client/v2"
@@ -30,6 +31,50 @@ func (dbclient *DbClient) Connect() error {
 	}
 
 	dbclient.influxClient = client
+
+	// Create the database if it doesn't exist on the server.
+	query := influxdb.Query{
+		Command: "SHOW DATABASES",
+	}
+	response, err := dbclient.influxClient.Query(query)
+	dbclient.handleCheckDatabaseExistsError(err)
+
+	if err != nil {
+		return err
+	}
+
+	// Get the list of databases.
+	databases := response.Results[0].Series[0].Values
+
+	for i := range databases {
+		dbName, ok := databases[i][0].(string)
+
+		if !ok {
+			err := fmt.Errorf("Couldn't get the database name from the result set")
+			dbclient.handleCheckDatabaseExistsError(err)
+
+			return err
+		}
+
+		if dbclient.database == dbName {
+			dbclient.logger.Printf("Database '%s' already exists on the server", dbclient.database)
+
+			return nil
+		}
+	}
+
+	query = influxdb.Query{
+		Command: "CREATE DATABASE " + dbclient.database,
+	}
+	_, err = dbclient.influxClient.Query(query)
+
+	if err != nil {
+		dbclient.handleCheckDatabaseExistsError(err)
+
+		return err
+	}
+
+	dbclient.logger.Printf("Created database '%s'", dbclient.database)
 
 	return nil
 }
@@ -139,5 +184,11 @@ func (dbclient *DbClient) handleCreateSeriesError(err error) {
 func (dbclient *DbClient) handleCreatePointError(err error) {
 	if err != nil {
 		dbclient.logger.Println("Couldn't create a point for the database:", err)
+	}
+}
+
+func (dbclient *DbClient) handleCheckDatabaseExistsError(err error) {
+	if err != nil {
+		dbclient.logger.Println("Couldn't check if the database exists:", err)
 	}
 }
