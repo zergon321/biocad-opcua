@@ -1,5 +1,7 @@
-FROM golang:1.12 AS builder
-COPY . /go/src/biocad-opcua
+FROM dependencies AS builder
+# Copy the application source code.
+COPY ./web-server /go/src/biocad-opcua/opcua-monitor
+# Build the application.
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/bin/opcua-monitor /go/src/biocad-opcua/opcua-monitor/
 ENTRYPOINT [ "/go/bin/opcua-monitor" ]
 
