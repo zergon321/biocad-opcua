@@ -52,7 +52,6 @@ services:
   web-server:
     depends_on:
       - opcua-monitor
-      - influxdb
       - nats
       - redis
     build:
