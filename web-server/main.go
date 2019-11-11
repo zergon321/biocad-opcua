@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -23,18 +24,23 @@ var (
 	cacheAddress  string
 	brokerAddress string
 	topic         string
+	launchTimeout int
 )
 
 func parseFlags() {
 	flag.StringVar(&cacheAddress, "cacheaddress", "", "Address and port of the cache server")
 	flag.StringVar(&brokerAddress, "brokerhost", "", "Address of the message broker")
 	flag.StringVar(&topic, "topic", "measures", "Name of the topic to spread measures across the system")
+	flag.IntVar(&launchTimeout, "launch-timeout", 5, "Time to sleep before starting the application")
 
 	flag.Parse()
 }
 
 func main() {
 	parseFlags()
+
+	// Sleep to give other microservices time to start up.
+	time.Sleep(time.Duration(launchTimeout) * time.Second)
 
 	// Change working directory to the application directory.
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))

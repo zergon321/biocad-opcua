@@ -25,6 +25,7 @@ services:
       - --brokerhost=nats://nats:4222
       - --topic=measures
       - --capacity=5
+      - --launch-timeout=3
   
   alerter:
     depends_on:
@@ -48,6 +49,7 @@ services:
       - --brokerhost=nats://nats:4222
       - --topic=measures
       - --capacity=5
+      - --launch-timeout=3
 
   web-server:
     depends_on:
@@ -69,6 +71,7 @@ services:
       - --cacheaddress=redis:6380
       - --brokerhost=nats://nats:4222
       - --topic=measures
+      - --launch-timeout=3
 
   nats:
     image: nats
