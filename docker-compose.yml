@@ -49,7 +49,7 @@ services:
       - --brokerhost=nats://nats:4222
       - --topic=measures
       - --capacity=5
-      - --launch-timeout=3
+      - --launch-timeout=4
 
   web-server:
     depends_on:
@@ -71,7 +71,7 @@ services:
       - --cacheaddress=redis:6380
       - --brokerhost=nats://nats:4222
       - --topic=measures
-      - --launch-timeout=3
+      - --launch-timeout=4
 
   nats:
     image: nats
